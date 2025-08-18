@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Parent Dashboard</title>
+</head>
+<body class="min-h-screen bg-gray-50">
+  <div class="max-w-4xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-3xl font-bold">Parent Dashboard</h1>
+      <div class="space-x-2">
+        <a href="{% url 'child_register' %}" class="px-4 py-2 rounded-xl bg-blue-600 text-white">+ Register Child</a>
+        <a href="{% url 'logout' %}" class="px-4 py-2 rounded-xl bg-gray-200">Logout</a>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow p-4">
+      <h2 class="text-xl font-semibold mb-3">Your Children</h2>
+      <ul class="space-y-2">
+        {% for rel in children %}
+          <li class="p-3 rounded-xl border flex items-center justify-between">
+            <span class="font-medium">{{ rel.child.username }}</span>
+            <span class="text-gray-500 text-sm">{{ rel.child.email }}</span>
+          </li>
+        {% empty %}
+          <li class="text-gray-500">No children registered yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
