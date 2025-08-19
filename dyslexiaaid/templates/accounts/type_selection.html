@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Type of Dyslexia</title>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+  <div class="max-w-md bg-white p-6 rounded-xl shadow">
+    <h1 class="text-xl font-bold mb-4">Select Dyslexia Type</h1>
+    <form method="POST" class="space-y-3">
+      {% csrf_token %}
+      {% for option in dyslexia_types %}
+        <button type="submit" name="dyslexia_type" value="{{ option }}"
+          class="w-full block bg-purple-100 hover:bg-purple-200 text-purple-700 font-medium py-2 px-4 rounded-lg">
+          {{ option }}
+        </button>
+      {% endfor %}
+    </form>
+  </div>
+</body>
+</html>

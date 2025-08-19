@@ -13,4 +13,8 @@ urlpatterns = [
 
     # Parent dashboard
     path("dashboard/parent/", views.parent_dashboard, name="parent_dashboard"),
+
+    # New: Introduction and Dyslexia Type Selection
+    path("child/<int:child_id>/introduction/", views.introduction, name="introduction"),
+    path("child/<int:child_id>/type-selection/", views.type_selection, name="type_selection"),
 ]
