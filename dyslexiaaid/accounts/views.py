@@ -38,6 +38,35 @@ def parent_dashboard(request):
     children = ChildProfile.objects.filter(parent=request.user)
     return render(request, "accounts/parent_dashboard.html", {"children": children})
 
+@login_required
+def child_dashboard(request, child_id):
+    child_profile = get_object_or_404(ChildProfile, child_id=child_id)
+
+    if request.user != child_profile.parent and request.user != child_profile.child:
+        return HttpResponseForbidden("Not authorized.")
+
+    # Example: modules activated depending on dyslexia type
+    modules_map = {
+        "Phonological dyslexia": ["Phonics Training", "Sound Recognition"],
+        "Surface dyslexia": ["Word Recognition", "Sight Words"],
+        "Visual dyslexia": ["Visual Tracking", "Reading Exercises"],
+        "Rapid naming deficit": ["Speed Reading", "Naming Drills"],
+        "Developmental dyslexia": ["General Reading", "Adaptive Lessons"],
+        "Acquired dyslexia": ["Memory Support", "Rehabilitation Exercises"],
+    }
+
+    modules = modules_map.get(child_profile.dyslexia_type, [])
+
+    return render(
+        request,
+        "accounts/child_dashboard.html",
+        {
+            "child_profile": child_profile,
+            "modules": modules,
+        },
+    )
+
+
 
 
 
@@ -78,7 +107,8 @@ def type_selection(request, child_id):
         dyslexia_type = request.POST.get("dyslexia_type")
         child_profile.dyslexia_type = dyslexia_type
         child_profile.save()
-        return redirect("parent_dashboard")
+        # ✅ After choosing → go to child dashboard
+        return redirect("child_dashboard", child_id=child_profile.child.id)
 
     return render(
         request,

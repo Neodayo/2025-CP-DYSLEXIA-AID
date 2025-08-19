@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Child Dashboard</title>
+</head>
+<body class="bg-violet-50 min-h-screen">
+  <!-- Header -->
+  <div class="bg-violet-200 p-4 shadow flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-violet-900">Welcome, {{ child_profile.child.username }} 🎉</h1>
+    <a href="{% url 'logout' %}" class="bg-red-500 text-white px-3 py-1 rounded-lg">Logout</a>
+  </div>
+
+  <!-- Navigation -->
+  <div class="flex justify-center space-x-6 my-6">
+    <a href="#" class="px-4 py-2 bg-violet-600 text-white rounded-xl hover:bg-violet-700">🏠 Home</a>
+    <a href="#modules" class="px-4 py-2 bg-violet-600 text-white rounded-xl hover:bg-violet-700">📘 Modules</a>
+    <a href="#" class="px-4 py-2 bg-violet-600 text-white rounded-xl hover:bg-violet-700">👤 Profile</a>
+    <a href="#" class="px-4 py-2 bg-violet-600 text-white rounded-xl hover:bg-violet-700">📊 Progress</a>
+  </div>
+
+  <!-- Modules -->
+  <div id="modules" class="max-w-3xl mx-auto bg-white rounded-xl shadow p-6">
+    <h2 class="text-xl font-semibold mb-4 text-violet-900">Your Modules ({{ child_profile.dyslexia_type }})</h2>
+    <ul class="space-y-3">
+      {% for module in modules %}
+        <li class="p-4 border rounded-lg hover:bg-violet-50">
+          📘 {{ module }}
+        </li>
+      {% empty %}
+        <li class="text-gray-500">No modules assigned yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</body>
+</html>
