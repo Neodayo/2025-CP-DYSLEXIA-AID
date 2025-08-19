@@ -1,0 +1,8 @@
+{% extends "accounts/base_child.html" %}
+{% block content %}
+  <h2 class="text-2xl font-bold mb-4">Progress Tracker</h2>
+  <p>Completed {{ progress_data.completed }} of {{ progress_data.total }} modules.</p>
+  <div class="mt-4 p-4 bg-violet-100 rounded-lg">
+    📊 Suggestion: Try more <b>Phonics Training</b> to improve reading speed.
+  </div>
+{% endblock %}

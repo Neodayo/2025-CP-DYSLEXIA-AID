@@ -14,6 +14,11 @@ urlpatterns = [
     # Parent dashboard
     path("dashboard/parent/", views.parent_dashboard, name="parent_dashboard"),
     path("dashboard/child/<int:child_id>/", views.child_dashboard, name="child_dashboard"),
+    path("dashboard/child/<int:child_id>/", views.child_dashboard, name="child_dashboard"),
+    path("dashboard/child/<int:child_id>/home/", views.child_home, name="child_home"),
+    path("dashboard/child/<int:child_id>/modules/", views.child_modules, name="child_modules"),
+    path("dashboard/child/<int:child_id>/profile/", views.child_profile, name="child_profile"),
+    path("dashboard/child/<int:child_id>/progress/", views.child_progress, name="child_progress"),
 
     # New: Introduction and Dyslexia Type Selection
     path("child/<int:child_id>/introduction/", views.introduction, name="introduction"),

@@ -115,3 +115,45 @@ def type_selection(request, child_id):
         "accounts/type_selection.html",
         {"child_profile": child_profile, "dyslexia_types": dyslexia_types},
     )
+
+
+@login_required
+def child_dashboard(request, child_id):
+    # Default redirect to Home
+    return redirect("child_home", child_id=child_id)
+
+@login_required
+def child_home(request, child_id):
+    child_profile = get_object_or_404(ChildProfile, child_id=child_id)
+    progress = 50  # later calculate dynamically
+    return render(request, "accounts/child_home.html", {
+        "child_profile": child_profile,
+        "progress": progress
+    })
+
+@login_required
+def child_modules(request, child_id):
+    child_profile = get_object_or_404(ChildProfile, child_id=child_id)
+    # Fetch modules from DB (admin uploads) – placeholder for now
+    all_modules = ["Phonics Training", "Sight Words", "Visual Tracking", "Speed Reading"]
+    return render(request, "accounts/child_modules.html", {
+        "child_profile": child_profile,
+        "modules": all_modules
+    })
+
+@login_required
+def child_profile(request, child_id):
+    child_profile = get_object_or_404(ChildProfile, child_id=child_id)
+    return render(request, "accounts/child_profile.html", {
+        "child_profile": child_profile
+    })
+
+@login_required
+def child_progress(request, child_id):
+    child_profile = get_object_or_404(ChildProfile, child_id=child_id)
+    # Placeholder progress data
+    progress_data = {"completed": 3, "total": 5}
+    return render(request, "accounts/child_progress.html", {
+        "child_profile": child_profile,
+        "progress_data": progress_data
+    })

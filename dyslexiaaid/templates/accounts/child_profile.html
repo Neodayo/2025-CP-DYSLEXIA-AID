@@ -1,0 +1,11 @@
+{% extends "accounts/base_child.html" %}
+{% block content %}
+  <h2 class="text-2xl font-bold mb-4">Profile</h2>
+  <p><b>Name:</b> {{ child_profile.child.username }}</p>
+  <p><b>Email:</b> {{ child_profile.child.email }}</p>
+  <p><b>Dyslexia Type:</b> {{ child_profile.dyslexia_type }}</p>
+  <p><b>Parent:</b> {{ child_profile.parent.username }}</p>
+  <div class="mt-4">
+    <button class="px-4 py-2 bg-violet-600 text-white rounded-lg">Edit Profile</button>
+  </div>
+{% endblock %}

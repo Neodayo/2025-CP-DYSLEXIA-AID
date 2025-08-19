@@ -1,0 +1,9 @@
+{% extends "accounts/base_child.html" %}
+{% block content %}
+  <h2 class="text-2xl font-bold mb-4">Welcome, {{ child_profile.child.username }} 🎉</h2>
+  <p class="mb-4">Your dyslexia type: <b>{{ child_profile.dyslexia_type }}</b></p>
+  <p class="mb-6">Progress so far: {{ progress }}%</p>
+  <div class="p-4 bg-violet-100 rounded-lg">
+    🌟 “Every expert was once a beginner. Keep going!”
+  </div>
+{% endblock %}

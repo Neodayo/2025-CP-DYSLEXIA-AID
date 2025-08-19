@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>{{ title }}</title>
+</head>
+<body class="bg-violet-50 min-h-screen text-gray-800">
+  <!-- Navbar -->
+  <div class="bg-violet-300 p-4 flex justify-between items-center shadow">
+    <h1 class="text-xl font-bold text-violet-900">Dyslexia Learning Aid</h1>
+    <div class="space-x-4">
+      <a href="{% url 'child_home' child_profile.child.id %}" class="hover:underline">🏠 Home</a>
+      <a href="{% url 'child_modules' child_profile.child.id %}" class="hover:underline">📘 Modules</a>
+      <a href="{% url 'child_profile' child_profile.child.id %}" class="hover:underline">👤 Profile</a>
+      <a href="{% url 'child_progress' child_profile.child.id %}" class="hover:underline">📊 Progress</a>
+      
+      <form method="POST" action="{% url 'logout' %}">
+  {% csrf_token %}
+  <button type="submit" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">
+    🚪 Logout
+  </button>
+</form>
+
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="p-6">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>
