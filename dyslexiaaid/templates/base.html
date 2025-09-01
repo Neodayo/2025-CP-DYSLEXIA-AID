@@ -1,58 +1,52 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
+  <title>{% block title %}DyslexiaAid{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind + Lucide + Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
-  <title>Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
     body {
       font-family: 'Inter', sans-serif;
     }
-    
     .gradient-bg {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
-    
     .glass-effect {
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    
     .input-field {
       transition: all 0.3s ease;
       border: 2px solid #e5e7eb;
     }
-    
     .input-field:focus {
       border-color: #667eea;
       box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
       outline: none;
     }
-    
     .btn-primary {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       transition: all 0.3s ease;
       transform: translateY(0);
     }
-    
     .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
     }
-    
     .animate-fadeIn {
       animation: fadeIn 0.6s ease-out;
     }
-    
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
     .progress-bar {
       height: 4px;
       background: linear-gradient(90deg, #667eea, #764ba2);
@@ -60,53 +54,32 @@
       transform-origin: left;
       animation: progress 2s ease-out;
     }
-    
     @keyframes progress {
       from { transform: scaleX(0); }
       to { transform: scaleX(1); }
     }
   </style>
+
+  {% block extra_head %}{% endblock %}
 </head>
-<body class="min-h-screen gradient-bg flex items-center justify-center p-4">
+<body class="min-h-screen gradient-bg p-4">
+
   <!-- Floating particles background -->
   <div class="absolute inset-0 overflow-hidden">
     <div class="absolute w-64 h-64 bg-white opacity-5 rounded-full -top-32 -left-32 animate-pulse"></div>
     <div class="absolute w-48 h-48 bg-white opacity-5 rounded-full top-1/2 -right-24 animate-pulse" style="animation-delay: 1s;"></div>
     <div class="absolute w-32 h-32 bg-white opacity-5 rounded-full bottom-10 left-1/4 animate-pulse" style="animation-delay: 2s;"></div>
   </div>
-  
-  <div class="glass-effect shadow-2xl rounded-3xl p-8 w-full max-w-md animate-fadeIn relative z-10">
-    <!-- Progress bar -->
-    <div class="progress-bar mb-6"></div>
-    
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-        <i data-lucide="log-in" class="w-8 h-8 text-white"></i>
-      </div>
-      <h1 class="text-2xl font-bold text-gray-800 mb-2">Login</h1>
-      <p class="text-gray-600 text-sm">Welcome back to DyslexiaAid</p>
-    </div>
 
-    <form method="post" class="space-y-4">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button class="btn-primary w-full py-3 rounded-xl text-white font-semibold flex items-center justify-center space-x-2">
-        <i data-lucide="log-in" class="w-5 h-5"></i>
-        <span>Login</span>
-      </button>
-    </form>
-    
-    <div class="text-center mt-6">
-      <p class="text-sm text-gray-600">Don't have an account?
-        <a href="{% url 'parent_register' %}" class="text-blue-600 hover:text-blue-800 font-semibold underline transition-colors">Register as Parent</a>
-      </p>
-    </div>
+  <!-- Page content -->
+  <div class="relative z-10 w-full max-w-6xl mx-auto">
+    {% block content %}{% endblock %}
   </div>
 
   <script>
-    // Initialize Lucide icons
     lucide.createIcons();
   </script>
+  {% block extra_js %}{% endblock %}
 </body>
+
 </html>

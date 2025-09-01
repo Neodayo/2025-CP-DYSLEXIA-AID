@@ -1,51 +1,68 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>Parent Dashboard</title>
-</head>
-<body class="min-h-screen bg-gray-50">
-  <div class="max-w-4xl mx-auto p-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-3xl font-bold">Parent Dashboard</h1>
-      <div class="space-x-2">
-        <a href="{% url 'child_register' %}" class="px-4 py-2 rounded-xl bg-blue-600 text-white">+ Register Child</a>
-        <a href="{% url 'logout' %}" class="px-4 py-2 rounded-xl bg-gray-200">Logout</a>
+{% extends "base.html" %}
+{% block title %}Parent Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+  
+  <!-- Header -->
+  <div class="glass-effect shadow-2xl rounded-3xl p-8 mb-6 animate-fadeIn">
+    <div class="flex items-center justify-between">
+      <h1 class="text-3xl font-bold text-gray-800">Parent Dashboard</h1>
+      <div class="flex items-center space-x-3">
+        <a href="{% url 'child_register' %}" 
+           class="btn-primary px-6 py-3 rounded-xl text-white font-semibold flex items-center space-x-2">
+          <i data-lucide="user-plus" class="w-5 h-5"></i>
+          <span>Register Child</span>
+        </a>
+        <form method="post" action="{% url 'logout' %}" class="inline">
+          {% csrf_token %}
+          <button type="submit" 
+                  class="glass-effect px-6 py-3 rounded-xl text-gray-700 font-semibold hover:bg-white hover:bg-opacity-50 transition-all">
+            Logout
+          </button>
+        </form>
       </div>
     </div>
-
-    <!-- Children List -->
-    <div class="bg-white rounded-2xl shadow p-4">
-      <h2 class="text-xl font-semibold mb-3">Your Children</h2>
-      <ul class="space-y-2">
-        {% for profile in children %}
-          <li class="p-3 rounded-xl border flex items-center justify-between hover:bg-gray-50">
-            <!-- Child name links to Introduction -->
-            <a href="{% url 'introduction' profile.child.id %}" class="font-medium text-blue-600 hover:underline">
-              {{ profile.child.username }}
-            </a>
-            
-            <!-- Right side info -->
-            <div class="text-sm text-gray-600 flex items-center gap-4">
-              <span>{{ profile.child.email }}</span>
-              {% if profile.dyslexia_type %}
-                <span class="px-2 py-1 text-xs rounded-lg bg-purple-100 text-purple-700">
-                  {{ profile.dyslexia_type }}
-                </span>
-              {% else %}
-                <span class="px-2 py-1 text-xs rounded-lg bg-gray-100 text-gray-500">
-                  Not Set
-                </span>
-              {% endif %}
-            </div>
-          </li>
-        {% empty %}
-          <li class="text-gray-500">No children registered yet.</li>
-        {% endfor %}
-      </ul>
-    </div>
   </div>
-</body>
-</html>
+
+  <!-- Children List -->
+  <div class="glass-effect shadow-2xl rounded-3xl p-8 animate-fadeIn" style="animation-delay: 0.2s;">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Children</h2>
+    <ul class="space-y-4">
+      {% for profile in children %}
+      <li class="p-6 rounded-2xl border border-white border-opacity-30 bg-white bg-opacity-20 flex items-center justify-between card-hover">
+        <a href="{% url 'introduction' profile.child.id %}" 
+           class="font-semibold text-blue-700 hover:text-blue-800 text-lg flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+            <i data-lucide="user" class="w-5 h-5 text-white"></i>
+          </div>
+          <span>{{ profile.child.username }}</span>
+        </a>
+
+        <div class="flex items-center space-x-6">
+          <span class="text-gray-600 font-medium">{{ profile.child.email }}</span>
+          {% if profile.dyslexia_type %}
+          <span class="px-4 py-2 text-sm rounded-xl bg-purple-500 bg-opacity-20 text-purple-700 font-medium border border-purple-200">
+            {{ profile.dyslexia_type }}
+          </span>
+          {% else %}
+          <span class="px-4 py-2 text-sm rounded-xl bg-gray-500 bg-opacity-20 text-gray-600 font-medium border border-gray-200">
+            Not Set
+          </span>
+          {% endif %}
+        </div>
+      </li>
+      {% empty %}
+      <li class="p-6 rounded-2xl bg-white bg-opacity-30 text-center">
+        <div class="flex flex-col items-center space-y-3">
+          <div class="w-16 h-16 bg-gray-300 bg-opacity-50 rounded-2xl flex items-center justify-center">
+            <i data-lucide="users" class="w-8 h-8 text-gray-500"></i>
+          </div>
+          <p class="text-gray-600 font-medium">No children registered yet.</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

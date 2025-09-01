@@ -1,21 +1,53 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>Parent Registration</title>
-</head>
-<body class="min-h-screen bg-gray-100 flex items-center justify-center">
-  <div class="bg-white shadow rounded-2xl p-6 w-full max-w-md">
-    <h1 class="text-2xl font-bold mb-4">Register as Parent</h1>
-    <form method="post" class="space-y-3">
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center p-4">
+  
+  <div class="glass-effect shadow-2xl rounded-3xl p-8 w-full max-w-md animate-fadeIn relative z-10">
+    <!-- Progress bar -->
+    <div class="progress-bar mb-6"></div>
+    
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+        <i data-lucide="user-plus" class="w-8 h-8 text-white"></i>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-800 mb-2">Register as Parent</h1>
+      <p class="text-gray-600 text-sm">Join our learning community</p>
+    </div>
+
+    <!-- Form -->
+    <form method="post" class="space-y-4">
       {% csrf_token %}
-      {{ form.as_p }}
-      <button class="w-full py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700">Create Account</button>
+
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">
+            {{ field.label }}
+          </label>
+          {{ field }}
+          {% if field.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ field.errors|striptags }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <button class="btn-primary w-full py-3 rounded-xl text-white font-semibold flex items-center justify-center space-x-2">
+        <i data-lucide="user-plus" class="w-5 h-5"></i>
+        <span>Create Account</span>
+      </button>
     </form>
-    <p class="text-sm text-center mt-4">Already have an account?
-      <a href="{% url 'login' %}" class="text-blue-600 underline">Login</a>
-    </p>
+    
+    <div class="text-center mt-6">
+      <p class="text-sm text-gray-600">Already have an account?
+        <a href="{% url 'login' %}" class="text-blue-600 hover:text-blue-800 font-semibold underline transition-colors">Login</a>
+      </p>
+    </div>
   </div>
-</body>
-</html>
+</div>
+
+<script>
+  lucide.createIcons();
+</script>
+{% endblock %}

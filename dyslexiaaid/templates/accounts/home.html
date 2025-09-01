@@ -3,20 +3,124 @@
 <head>
   <meta charset="utf-8" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
   <title>DyslexiaAid</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.3s ease;
+      transform: translateY(0);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      transition: all 0.3s ease;
+      transform: translateY(0);
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+    
+    .animate-fadeIn {
+      animation: fadeIn 0.6s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .progress-bar {
+      height: 4px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 2px;
+      transform-origin: left;
+      animation: progress 2s ease-out;
+    }
+    
+    @keyframes progress {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white shadow-xl rounded-2xl p-8 text-center w-96">
-    <h1 class="text-2xl font-bold mb-6">Welcome to DyslexiaAid</h1>
-    <p class="text-gray-600 mb-6">A platform to support dyslexic learners with AI-powered tools.</p>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+  <!-- Floating particles background -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="absolute w-64 h-64 bg-white opacity-5 rounded-full -top-32 -left-32 animate-pulse"></div>
+    <div class="absolute w-48 h-48 bg-white opacity-5 rounded-full top-1/2 -right-24 animate-pulse" style="animation-delay: 1s;"></div>
+    <div class="absolute w-32 h-32 bg-white opacity-5 rounded-full bottom-10 left-1/4 animate-pulse" style="animation-delay: 2s;"></div>
+  </div>
+  
+  <div class="glass-effect shadow-2xl rounded-3xl p-8 text-center w-96 animate-fadeIn relative z-10">
+    <!-- Progress bar -->
+    <div class="progress-bar mb-6"></div>
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+        <i data-lucide="brain" class="w-10 h-10 text-white"></i>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-800 mb-4">Welcome to DyslexiaAid</h1>
+      <p class="text-gray-600 text-lg">A platform to support dyslexic learners with AI-powered tools.</p>
+    </div>
+    
     <div class="space-y-4">
-      <a href="{% url 'login' %}" class="block bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700">
-        Login
+      <a href="{% url 'login' %}" class="btn-primary block text-white py-3 rounded-xl font-semibold flex items-center justify-center space-x-2">
+        <i data-lucide="log-in" class="w-5 h-5"></i>
+        <span>Login</span>
       </a>
-      <a href="{% url 'parent_register' %}" class="block bg-green-600 text-white py-2 rounded-xl hover:bg-green-700">
-        Register as Parent
+      <a href="{% url 'parent_register' %}" class="btn-secondary block text-white py-3 rounded-xl font-semibold flex items-center justify-center space-x-2">
+        <i data-lucide="user-plus" class="w-5 h-5"></i>
+        <span>Register as Parent</span>
       </a>
     </div>
+    
+    <!-- Features preview -->
+    <div class="mt-8 pt-6 border-t border-gray-200">
+      <div class="flex justify-center space-x-6 text-xs text-gray-500">
+        <div class="flex items-center space-x-1">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>AI-Powered</span>
+        </div>
+        <div class="flex items-center space-x-1">
+          <i data-lucide="heart" class="w-4 h-4"></i>
+          <span>Child-Friendly</span>
+        </div>
+        <div class="flex items-center space-x-1">
+          <i data-lucide="star" class="w-4 h-4"></i>
+          <span>Personalized</span>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
 </body>
 </html>

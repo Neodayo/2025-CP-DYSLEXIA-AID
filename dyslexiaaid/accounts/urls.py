@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     # make thi direct to expected landingg pagee plss
@@ -23,4 +24,6 @@ urlpatterns = [
     # New: Introduction and Dyslexia Type Selection
     path("child/<int:child_id>/introduction/", views.introduction, name="introduction"),
     path("child/<int:child_id>/type-selection/", views.type_selection, name="type_selection"),
+
+     path("logout/", auth_views.LogoutView.as_view(template_name="accounts/logout.html"), name="logout"),
 ]
