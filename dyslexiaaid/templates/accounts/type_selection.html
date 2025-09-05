@@ -3,20 +3,72 @@
 <head>
   <meta charset="utf-8">
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Alpine.js for modal toggles -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <title>Type of Dyslexia</title>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center">
-  <div class="max-w-md bg-white p-6 rounded-xl shadow">
+  <div class="max-w-md bg-white p-6 rounded-xl shadow" x-data="{ openModal: null }">
     <h1 class="text-xl font-bold mb-4">Select Dyslexia Type</h1>
-    <form method="POST" class="space-y-3">
+    <div class="space-y-3">
       {% csrf_token %}
       {% for option in dyslexia_types %}
-        <button type="submit" name="dyslexia_type" value="{{ option }}"
+        <!-- Button opens modal -->
+        <button type="button"
+          @click="openModal = '{{ option }}'"
           class="w-full block bg-purple-100 hover:bg-purple-200 text-purple-700 font-medium py-2 px-4 rounded-lg">
           {{ option }}
         </button>
+
+        <!-- Modal -->
+        <div
+          x-show="openModal === '{{ option }}'"
+          class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+          style="display: none;"
+        >
+          <div class="bg-white rounded-xl p-6 w-96 shadow-xl">
+            <h2 class="text-lg font-semibold mb-3">{{ option }}</h2>
+            <p class="text-gray-600 text-sm mb-4">
+              {% if option == "Phonological dyslexia" %}
+                Difficulty with phonics and sound processing.
+                <br><strong>Modules:</strong> 📘 Phonics Training
+              {% elif option == "Surface dyslexia" %}
+                Trouble recognizing whole words.
+                <br><strong>Modules:</strong> 📘 Sight Words
+              {% elif option == "Visual dyslexia" %}
+                Visual tracking and reading issues.
+                <br><strong>Modules:</strong> 📘 Visual Tracking
+              {% elif option == "Rapid naming deficit" %}
+                Slow recall of words/symbols.
+                <br><strong>Modules:</strong> 📘 Speed Reading
+              {% elif option == "Developmental dyslexia" %}
+                Generalized reading challenges.
+                <br><strong>Modules:</strong> 
+                📘 Phonics Training, 📘 Sight Words, 📘 Visual Tracking, 📘 Speed Reading
+              {% elif option == "Acquired dyslexia" %}
+                Caused by brain injury/stroke.
+                <br><strong>Modules:</strong> 📘 Sight Words, 📘 Visual Tracking
+              {% endif %}
+            </p>
+
+            <!-- Actions -->
+            <form method="POST" class="flex justify-end space-x-2">
+              {% csrf_token %}
+              <input type="hidden" name="dyslexia_type" value="{{ option }}">
+              <button type="button"
+                @click="openModal = null"
+                class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+                Cancel
+              </button>
+              <button type="submit"
+                class="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700">
+                Select
+              </button>
+            </form>
+          </div>
+        </div>
       {% endfor %}
-    </form>
+    </div>
   </div>
 </body>
 </html>
