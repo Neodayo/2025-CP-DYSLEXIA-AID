@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, ChildProfile
+from .models import CustomUser, ChildProfile , DYSLEXIA_CHOICES
 
 class ParentRegisterForm(UserCreationForm):
     class Meta:
@@ -28,3 +28,14 @@ class ChildRegisterForm(UserCreationForm):
             if parent_user and parent_user.role == "PARENT":
                 ChildProfile.objects.create(parent=parent_user, child=user)
         return user
+
+class IndependentRegisterForm(UserCreationForm):
+
+    dyslexia_type = forms.ChoiceField(
+        choices=DYSLEXIA_CHOICES,
+        required=True,
+        label="Select Dyslexia Type"
+    )
+    class Meta:
+        model = CustomUser
+        fields = ("username", "email", "password1", "password2")

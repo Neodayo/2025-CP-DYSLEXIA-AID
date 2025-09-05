@@ -27,6 +27,11 @@
          class="px-4 py-2 rounded-xl font-semibold text-violet-900 hover:bg-white hover:bg-opacity-50 transition">
         📊 Progress
       </a>
+      <a href="{% url 'lesson_list' %}" class="block p-3 rounded-lg bg-violet-200 hover:bg-violet-300">
+  📘 Lessons
+</a>
+
+
 
       <!-- Logout -->
       <form method="POST" action="{% url 'logout' %}" class="inline">

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>{{ title }}</title>
+</head>
+<body class="bg-violet-50 min-h-screen">
+  <div class="max-w-3xl mx-auto p-6">
+    <div class="bg-white rounded-2xl p-6 shadow">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold text-violet-900">{{ lesson.title }}</h1>
+        <a href="{% url 'lesson_list' %}" class="text-sm text-violet-700 hover:underline">← Back to lessons</a>
+      </div>
+
+      {% if lesson.image %}
+        <img src="{{ lesson.image.url }}" alt="{{ lesson.title }}" class="w-full rounded-xl mb-4" />
+      {% endif %}
+
+      <div class="p-4 bg-violet-100 rounded-xl text-lg leading-relaxed mb-4">
+        {{ lesson.content_text }}
+      </div>
+
+      <div class="flex gap-3 mb-6">
+        <button id="btnSpeak"
+                class="px-4 py-2 bg-violet-600 text-white rounded-xl hover:bg-violet-700">
+          🔊 Read Aloud
+        </button>
+        <button id="btnRepeat"
+                class="px-4 py-2 bg-violet-200 text-violet-900 rounded-xl hover:bg-violet-300">
+          ↻ Repeat
+        </button>
+        <button id="btnStop"
+                class="px-4 py-2 bg-gray-200 text-gray-900 rounded-xl hover:bg-gray-300">
+          ⏹ Stop
+        </button>
+      </div>
+
+      {% if lesson.prompt %}
+        <div class="mt-2">
+          <p class="font-semibold mb-3">{{ lesson.prompt }}</p>
+          <div class="grid sm:grid-cols-3 gap-3">
+            {% if lesson.choice_a %}
+              <button data-choice="A" class="choice px-4 py-3 bg-white border rounded-xl hover:bg-violet-50">
+                {{ lesson.choice_a }}
+              </button>
+            {% endif %}
+            {% if lesson.choice_b %}
+              <button data-choice="B" class="choice px-4 py-3 bg-white border rounded-xl hover:bg-violet-50">
+                {{ lesson.choice_b }}
+              </button>
+            {% endif %}
+            {% if lesson.choice_c %}
+              <button data-choice="C" class="choice px-4 py-3 bg-white border rounded-xl hover:bg-violet-50">
+                {{ lesson.choice_c }}
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div id="feedback" class="mt-4 text-lg font-semibold"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- TTS controls (Web Speech API)
+    const textToRead = `{{ lesson.content_text|escapejs }}`;
+    let ttsPlays = 0;
+    let repeats = 0;
+    let startTime = Date.now();
+
+    function speak(txt) {
+      const u = new SpeechSynthesisUtterance(txt);
+      // You can tune rate/pitch for dyslexia-friendly reading:
+      u.rate = 0.9;   // slightly slower
+      u.pitch = 1.0;
+      u.lang = 'en-US'; // change if needed
+      speechSynthesis.speak(u);
+    }
+
+    document.getElementById('btnSpeak').addEventListener('click', () => {
+      ttsPlays += 1;
+      speak(textToRead);
+    });
+
+    document.getElementById('btnRepeat').addEventListener('click', () => {
+      repeats += 1;
+      speak(textToRead);
+    });
+
+    document.getElementById('btnStop').addEventListener('click', () => {
+      speechSynthesis.cancel();
+    });
+
+    // --- Answer submission
+    async function submitAttempt(selectedChoice) {
+      const elapsed = Date.now() - startTime;
+      const payload = {
+        selected_choice: selectedChoice,
+        time_spent_ms: elapsed,
+        tts_plays: ttsPlays,
+        repeats: repeats
+      };
+      const res = await fetch("{% url 'record_attempt' lesson.id %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      const fb = document.getElementById("feedback");
+      if (data.is_correct) {
+        fb.textContent = "✅ Correct! Great job!";
+        fb.className = "mt-4 text-lg font-semibold text-green-700";
+      } else {
+        fb.textContent = "❌ Not quite. Try listening again and pick the best answer.";
+        fb.className = "mt-4 text-lg font-semibold text-red-700";
+      }
+      // Reset session counters for the next attempt
+      startTime = Date.now();
+      repeats = 0;
+      ttsPlays = 0;
+    }
+
+    document.querySelectorAll('.choice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        submitAttempt(btn.dataset.choice);
+      });
+    });
+  </script>
+</body>
+</html>

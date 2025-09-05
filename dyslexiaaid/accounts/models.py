@@ -5,8 +5,9 @@ class CustomUser(AbstractUser):
     ROLE_CHOICES = (
         ("PARENT", "Parent"),
         ("CHILD", "Non-Parent"),
+        ("INDEPENDENT", "Independent"),
     )
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="CHILD")
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="CHILD")
 
 class ChildProfile(models.Model):
     parent = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="children")
@@ -18,6 +19,16 @@ class ChildProfile(models.Model):
 from django.db import models
 from django.conf import settings
 
+DYSLEXIA_CHOICES = [
+    ("General", "General"),
+    ("Phonological", "Phonological"),
+    ("Visual", "Visual"),
+    ("Surface", "Surface"),
+    ("Rapid Naming", "Rapid Naming"),
+    ("Double Deficit", "Double Deficit"),
+    ("Other", "Other"),
+]
+
 class ChildProfile(models.Model):
     child = models.OneToOneField(
         settings.AUTH_USER_MODEL, 
@@ -27,13 +38,11 @@ class ChildProfile(models.Model):
     parent = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
-        related_name="children_profiles"
+        related_name="children_profiles",
+        null=True, blank=True  # ✅ parent is optional now
     )
-    dyslexia_type = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
+    dyslexia_type = models.CharField(max_length=50, choices=DYSLEXIA_CHOICES, default="General")
 
     def __str__(self):
         return f"{self.child.username}'s Profile"
+

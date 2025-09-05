@@ -12,6 +12,8 @@ urlpatterns = [
     # Child registration (only parent can access)
     path("register/child/", views.child_register, name="child_register"),
 
+    path("register/independent/", views.independent_register, name="independent_register"),
+
     # Parent dashboard
     path("dashboard/parent/", views.parent_dashboard, name="parent_dashboard"),
     path("dashboard/child/<int:child_id>/", views.child_dashboard, name="child_dashboard"),

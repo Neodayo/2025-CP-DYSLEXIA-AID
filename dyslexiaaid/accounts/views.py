@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from django.http import HttpResponseForbidden
-from .forms import ParentRegisterForm, ChildRegisterForm
+from .forms import ParentRegisterForm, ChildRegisterForm, IndependentRegisterForm
 from .models import ChildProfile  # <-- add this
 from django.shortcuts import get_object_or_404
 
@@ -29,6 +29,41 @@ def child_register(request):
     else:
         form = ChildRegisterForm()
     return render(request, "accounts/child_register.html", {"form": form})
+
+def independent_register(request):
+    if request.method == "POST":
+        form = IndependentRegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = "independent"   # assign role
+            user.save()
+
+            # ✅ Create a ChildProfile automatically
+            child_profile = ChildProfile.objects.create(
+                child=user,
+                dyslexia_type="General"  # default, can be updated later by user
+            )
+
+            # Redirect to child_dashboard with child_id
+            return redirect("child_dashboard", child_id=child_profile.child.id)
+    else:
+        form = IndependentRegisterForm()
+
+    return render(request, "accounts/independent_register.html", {"form": form})
+
+
+def login_redirect(request):
+    if request.user.is_authenticated:
+        if request.user.role == "PARENT":
+            return redirect("parent_dashboard")
+        elif request.user.role in ["CHILD", "INDEPENDENT"]:
+            try:
+                child_profile = ChildProfile.objects.get(child=request.user)
+                return redirect("child_dashboard", child_id=child_profile.child.id)
+            except ChildProfile.DoesNotExist:
+                return redirect("login")  # fallback if profile missing
+    return redirect("login")
+
 
 @login_required
 def parent_dashboard(request):
@@ -59,7 +94,7 @@ def child_dashboard(request, child_id):
 
     return render(
         request,
-        "accounts/child_dashboard.html",
+        "accounts/child_home.html",
         {
             "child_profile": child_profile,
             "modules": modules,
@@ -117,10 +152,6 @@ def type_selection(request, child_id):
     )
 
 
-@login_required
-def child_dashboard(request, child_id):
-    # Default redirect to Home
-    return redirect("child_home", child_id=child_id)
 
 @login_required
 def child_home(request, child_id):

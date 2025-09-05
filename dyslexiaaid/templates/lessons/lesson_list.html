@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>{{ title }}</title>
+</head>
+<body class="bg-violet-50 min-h-screen">
+  <div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-2xl font-bold text-violet-900 mb-2">📘 Available Lessons</h1>
+    {% if dyslexia_type %}
+      <p class="text-sm text-gray-600 mb-6">Filtered for: 
+        <span class="px-2 py-1 bg-violet-200 text-violet-800 rounded-lg">{{ dyslexia_type }}</span>
+      </p>
+    {% endif %}
+
+    <ul class="space-y-3">
+      {% for lesson in lessons %}
+        <li class="bg-white rounded-xl p-4 shadow flex justify-between items-center">
+          <div>
+            <div class="font-semibold text-lg">{{ lesson.title }}</div>
+            <div class="text-sm text-gray-500">Type: {{ lesson.dyslexia_type }} • Level {{ lesson.level }}</div>
+          </div>
+          <a href="{% url 'lesson_detail' lesson.id %}"
+             class="px-4 py-2 bg-violet-600 text-white rounded-xl hover:bg-violet-700">Open</a>
+        </li>
+      {% empty %}
+        <li class="text-gray-500">No lessons yet. Please ask your teacher/parent to add some.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</body>
+</html>
