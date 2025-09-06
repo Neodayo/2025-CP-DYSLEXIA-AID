@@ -34,13 +34,12 @@
 
 
       <!-- Logout -->
-      <form method="POST" action="{% url 'logout' %}" class="inline">
-        {% csrf_token %}
-        <button type="submit" 
-                class="glass-effect px-6 py-2 rounded-xl text-red-600 font-semibold hover:bg-white hover:bg-opacity-50 transition">
-          🚪 Logout
-        </button>
-      </form>
+      <a href="{% url 'logout' %}" 
+   class="glass-effect px-6 py-2 rounded-xl text-red-600 font-semibold hover:bg-white hover:bg-opacity-50 transition">
+   🚪 Logout
+</a>
+
+
     </div>
   </div>
 

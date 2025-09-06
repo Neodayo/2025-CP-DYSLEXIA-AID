@@ -39,3 +39,18 @@ class IndependentRegisterForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = ("username", "email", "password1", "password2")
+
+
+
+class DyslexiaTypeForm(forms.ModelForm):
+    class Meta:
+        model = ChildProfile
+        fields = ['dyslexia_type']
+        widgets = {
+            'dyslexia_type': forms.Select(attrs={'class': 'form-select'}),
+        }
+        labels = {
+            'dyslexia_type': 'Select Dyslexia Type',
+        }
+
+        

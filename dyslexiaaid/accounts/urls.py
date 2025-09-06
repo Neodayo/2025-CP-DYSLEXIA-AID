@@ -27,5 +27,11 @@ urlpatterns = [
     path("child/<int:child_id>/introduction/", views.introduction, name="introduction"),
     path("child/<int:child_id>/type-selection/", views.type_selection, name="type_selection"),
 
-     path("logout/", auth_views.LogoutView.as_view(template_name="accounts/logout.html"), name="logout"),
+    path('type-selection/<int:child_id>/', views.dyslexia_type_selection, name='dyslexia_type_selection'),
+
+    path('logout/', views.custom_logout, name='logout'),
+    path('redirect-after-login/', views.login_redirect, name='login_redirect'),
+    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+
+
 ]

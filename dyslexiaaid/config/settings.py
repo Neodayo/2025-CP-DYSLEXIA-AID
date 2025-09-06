@@ -71,7 +71,7 @@ TEMPLATES = [
 # Redirects
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "parent_dashboard"
-LOGOUT_REDIRECT_URL = "login"
+LOGIN_REDIRECT_URL = '/redirect-after-login/'
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
