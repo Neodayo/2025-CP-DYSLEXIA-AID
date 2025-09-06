@@ -29,26 +29,26 @@
           <div class="bg-white rounded-xl p-6 w-96 shadow-xl">
             <h2 class="text-lg font-semibold mb-3">{{ option }}</h2>
             <p class="text-gray-600 text-sm mb-4">
-              {% if option == "Phonological dyslexia" %}
-                Difficulty with phonics and sound processing.
-                <br><strong>Modules:</strong> 📘 Phonics Training
-              {% elif option == "Surface dyslexia" %}
-                Trouble recognizing whole words.
-                <br><strong>Modules:</strong> 📘 Sight Words
-              {% elif option == "Visual dyslexia" %}
-                Visual tracking and reading issues.
-                <br><strong>Modules:</strong> 📘 Visual Tracking
-              {% elif option == "Rapid naming deficit" %}
-                Slow recall of words/symbols.
-                <br><strong>Modules:</strong> 📘 Speed Reading
-              {% elif option == "Developmental dyslexia" %}
-                Generalized reading challenges.
-                <br><strong>Modules:</strong> 
-                📘 Phonics Training, 📘 Sight Words, 📘 Visual Tracking, 📘 Speed Reading
-              {% elif option == "Acquired dyslexia" %}
-                Caused by brain injury/stroke.
-                <br><strong>Modules:</strong> 📘 Sight Words, 📘 Visual Tracking
-              {% endif %}
+            {% if option == "Phonological dyslexia" %}
+               Difficulty breaking down words into sounds (phonemes).
+              <br><strong>Recommended Modules:</strong> 📘 Phonics Training
+            {% elif option == "Surface dyslexia" %}
+              Struggles with recognizing whole words instantly.
+              <br><strong>Recommended Modules:</strong> 📘 Sight Words
+            {% elif option == "Visual dyslexia" %}
+              Reading difficulties due to visual processing issues.
+              <br><strong>Recommended Modules:</strong> 📘 Visual Tracking
+            {% elif option == "Rapid naming deficit" %}
+              Slow recall of letters or words, reducing fluency.
+              <br><strong>Recommended Modules:</strong> 📘 Speed Reading
+            {% elif option == "Developmental dyslexia" %}
+              A broad reading disorder affecting decoding and fluency.
+              <br><strong>Recommended Modules:</strong> 📘 Phonics Training, 📘 Sight Words, 📘 Visual Tracking, 📘 Speed Reading
+            {% elif option == "Acquired dyslexia" %}
+              Reading problems developed after brain injury or stroke.
+              <br><strong>Recommended Modules:</strong> 📘 Sight Words, 📘 Visual Tracking
+            {% endif %}
+
             </p>
 
             <!-- Actions -->
