@@ -2,22 +2,23 @@
 {% block title %}Parent Dashboard{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto p-6">
+<div class="max-w-4xl mx-auto p-4 sm:p-6">
   
   <!-- Header -->
-  <div class="glass-effect shadow-2xl rounded-3xl p-8 mb-6 animate-fadeIn">
-    <div class="flex items-center justify-between">
-      <h1 class="text-3xl font-bold text-gray-800">Parent Dashboard</h1>
-      <div class="flex items-center space-x-3">
+  <div class="glass-effect shadow-2xl rounded-3xl p-6 sm:p-8 mb-6 animate-fadeIn">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Parent Dashboard</h1>
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-3 sm:space-y-0 w-full sm:w-auto">
         <a href="{% url 'child_register' %}" 
-           class="btn-primary px-6 py-3 rounded-xl text-white font-semibold flex items-center space-x-2">
+           class="btn-primary w-full sm:w-auto px-6 py-3 rounded-xl text-white font-semibold flex items-center justify-center space-x-2">
           <i data-lucide="user-plus" class="w-5 h-5"></i>
           <span>Register Child</span>
         </a>
-        <form method="post" action="{% url 'logout' %}" class="inline">
+        <form method="post" action="{% url 'logout' %}" class="w-full sm:w-auto">
           {% csrf_token %}
           <button type="submit" 
-                  class="glass-effect px-6 py-3 rounded-xl text-gray-700 font-semibold hover:bg-white hover:bg-opacity-50 transition-all">
+                  class="w-full sm:w-auto glass-effect px-6 py-3 rounded-xl text-gray-700 font-semibold hover:bg-white hover:bg-opacity-50 transition-all">
             Logout
           </button>
         </form>
@@ -26,27 +27,29 @@
   </div>
 
   <!-- Children List -->
-  <div class="glass-effect shadow-2xl rounded-3xl p-8 animate-fadeIn" style="animation-delay: 0.2s;">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Children</h2>
+  <div class="glass-effect shadow-2xl rounded-3xl p-6 sm:p-8 animate-fadeIn" style="animation-delay: 0.2s;">
+    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">Your Children</h2>
     <ul class="space-y-4">
       {% for profile in children %}
-      <li class="p-6 rounded-2xl border border-white border-opacity-30 bg-white bg-opacity-20 flex items-center justify-between card-hover">
-        <a href="{% url 'introduction' profile.child.id %}" 
-           class="font-semibold text-blue-700 hover:text-blue-800 text-lg flex items-center space-x-3">
-          <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-            <i data-lucide="user" class="w-5 h-5 text-white"></i>
-          </div>
-          <span>{{ profile.child.username }}</span>
-        </a>
 
-        <div class="flex items-center space-x-6">
-          <span class="text-gray-600 font-medium">{{ profile.child.email }}</span>
+
+      <li class="p-4 sm:p-6 rounded-2xl border border-white border-opacity-30 bg-white bg-opacity-20 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 card-hover">
+        <a href="{% url 'child_dashboard' profile.child.id %}" 
+   class="font-semibold text-blue-700 hover:text-blue-800 text-lg flex items-center space-x-3">
+  <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+    <i data-lucide="user" class="w-5 h-5 text-white"></i>
+  </div>
+  <span>{{ profile.child.username }}</span>
+</a>
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-2 sm:space-y-0">
+          <span class="text-gray-600 font-medium text-sm sm:text-base">{{ profile.child.email }}</span>
           {% if profile.dyslexia_type %}
-          <span class="px-4 py-2 text-sm rounded-xl bg-purple-500 bg-opacity-20 text-purple-700 font-medium border border-purple-200">
+          <span class="px-3 py-1 sm:px-4 sm:py-2 text-sm rounded-xl bg-purple-500 bg-opacity-20 text-purple-700 font-medium border border-purple-200">
             {{ profile.dyslexia_type }}
           </span>
           {% else %}
-          <span class="px-4 py-2 text-sm rounded-xl bg-gray-500 bg-opacity-20 text-gray-600 font-medium border border-gray-200">
+          <span class="px-3 py-1 sm:px-4 sm:py-2 text-sm rounded-xl bg-gray-500 bg-opacity-20 text-gray-600 font-medium border border-gray-200">
             Not Set
           </span>
           {% endif %}
