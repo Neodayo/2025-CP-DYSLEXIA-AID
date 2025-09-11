@@ -1,0 +1,73 @@
+{% extends "accounts/base_child.html" %}
+{% block content %}
+  <h2 class="text-2xl font-bold mb-4">Edit Child Profile</h2>
+
+  <!-- Trigger Button -->
+  <button 
+    type="button" 
+    onclick="document.getElementById('editModal').classList.remove('hidden')" 
+    class="px-4 py-2 bg-violet-600 text-white rounded-lg">
+    Edit Dyslexia Type
+  </button>
+
+  <!-- Modal -->
+  <div id="editModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg p-6 max-w-lg w-full">
+      <h3 class="text-xl font-bold mb-4">Edit Child Profile</h3>
+      
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <!-- Dynamic Dyslexia Type Description -->
+        <div id="dyslexiaDescription" class="mt-4 text-gray-700 text-sm bg-gray-100 p-3 rounded-lg hidden"></div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end gap-2 mt-4">
+          <button 
+            type="button" 
+            onclick="document.getElementById('editModal').classList.add('hidden')" 
+            class="px-4 py-2 bg-gray-300 rounded-lg">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 bg-violet-600 text-white rounded-lg">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const descriptions = {
+      "Phonological dyslexia": "Difficulty breaking down words into sounds (phonemes).<br><strong>Recommended Modules:</strong> 📘 Phonics Training",
+      "Surface dyslexia": "Struggles with recognizing whole words instantly.<br><strong>Recommended Modules:</strong> 📘 Sight Words",
+      "Visual dyslexia": "Reading difficulties due to visual processing issues.<br><strong>Recommended Modules:</strong> 📘 Visual Tracking",
+      "Rapid naming deficit": "Slow recall of letters or words, reducing fluency.<br><strong>Recommended Modules:</strong> 📘 Speed Reading",
+      "Developmental dyslexia": "A broad reading disorder affecting decoding and fluency.<br><strong>Recommended Modules:</strong> 📘 Phonics Training, 📘 Sight Words, 📘 Visual Tracking, 📘 Speed Reading",
+      "Acquired dyslexia": "Reading problems developed after brain injury or stroke.<br><strong>Recommended Modules:</strong> 📘 Sight Words, 📘 Visual Tracking"
+    };
+
+    const selectField = document.querySelector('select[name="dyslexia_type"]');
+    const descBox = document.getElementById('dyslexiaDescription');
+
+    if (selectField) {
+      selectField.addEventListener('change', function () {
+        const selected = this.value;
+        if (descriptions[selected]) {
+          descBox.innerHTML = descriptions[selected];
+          descBox.classList.remove('hidden');
+        } else {
+          descBox.classList.add('hidden');
+          descBox.innerHTML = "";
+        }
+      });
+
+      // Preload description if already selected in edit mode
+      if (descriptions[selectField.value]) {
+        descBox.innerHTML = descriptions[selectField.value];
+        descBox.classList.remove('hidden');
+      }
+    }
+  </script>
+{% endblock %}

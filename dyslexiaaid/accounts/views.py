@@ -2,11 +2,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from django.http import HttpResponseForbidden
-from .forms import ParentRegisterForm, ChildRegisterForm, IndependentRegisterForm, DyslexiaTypeForm
+from .forms import ParentRegisterForm, ChildRegisterForm, IndependentRegisterForm, DyslexiaTypeForm, ChildProfileEditForm
 from .forms import DyslexiaTypeForm
-from .models import ChildProfile  # <-- add this
+from .models import CustomUser, ChildProfile # <-- add this
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
+
 
 def parent_register(request):
     if request.method == "POST":
@@ -224,3 +225,26 @@ def custom_logout(request):
         logout(request)
         return redirect("login")  # Always go back to login after logout
     return redirect("home")  # fallback for GET
+
+
+@login_required
+def edit_child_profile(request, child_id):
+    child_user = get_object_or_404(CustomUser, id=child_id, role="CHILD")
+    child_profile = get_object_or_404(ChildProfile, child=child_user)
+
+    # Only parent of this child OR the child themselves can edit
+    if request.user != child_user and request.user != getattr(child_profile, 'parent', None):
+        return HttpResponseForbidden("Not authorized.")
+
+    if request.method == "POST":
+        form = ChildProfileEditForm(request.POST, instance=child_profile, child_instance=child_user)
+        if form.is_valid():
+            form.save()
+            return redirect("child_profile", child_id=child_user.id)
+    else:
+        form = ChildProfileEditForm(instance=child_profile, child_instance=child_user)
+
+    return render(request, "accounts/edit_child_profile.html", {
+        "form": form,
+        "child_profile": child_profile
+    })

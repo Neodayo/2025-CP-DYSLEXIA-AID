@@ -53,4 +53,35 @@ class DyslexiaTypeForm(forms.ModelForm):
             'dyslexia_type': 'Select Dyslexia Type',
         }
 
-        
+class ChildProfileEditForm(forms.ModelForm):
+    username = forms.CharField(required=True, label="Child Username")
+    email = forms.EmailField(required=True, label="Child Email")
+
+    class Meta:
+        model = ChildProfile
+        fields = ['dyslexia_type']
+        widgets = {
+            'dyslexia_type': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.child_instance = kwargs.pop('child_instance', None)
+        super().__init__(*args, **kwargs)
+
+        if self.child_instance:
+            self.fields['username'].initial = self.child_instance.username
+            self.fields['email'].initial = self.child_instance.email
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+
+        if self.child_instance:
+            self.child_instance.username = self.cleaned_data['username']
+            self.child_instance.email = self.cleaned_data['email']
+            if commit:
+                self.child_instance.save()
+
+        if commit:
+            profile.save()
+
+        return profile

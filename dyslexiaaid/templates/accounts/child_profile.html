@@ -6,6 +6,11 @@
   <p><b>Dyslexia Type:</b> {{ child_profile.dyslexia_type }}</p>
   <p><b>Parent:</b> {{ child_profile.parent.username }}</p>
   <div class="mt-4">
+    <div class="mt-4">
+  <a href="{% url 'edit_child_profile' child_profile.child.id %}">
     <button class="px-4 py-2 bg-violet-600 text-white rounded-lg">Edit Profile</button>
+  </a>
+</div>
+
   </div>
 {% endblock %}
