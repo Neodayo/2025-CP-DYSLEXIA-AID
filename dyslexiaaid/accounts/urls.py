@@ -15,7 +15,7 @@ urlpatterns = [
     path("register/independent/", views.independent_register, name="independent_register"),
 
     # Parent dashboard
-    path("dashboard/parent/", views.parent_dashboard, name="parent_dashboard"),
+    path("dashboard/parent/", views.parent_dashboard, name="parent_dashboard"), 
     path("dashboard/child/<int:child_id>/", views.child_dashboard, name="child_dashboard"),
     path("dashboard/child/<int:child_id>/", views.child_dashboard, name="child_dashboard"),
     path("dashboard/child/<int:child_id>/home/", views.child_home, name="child_home"),
@@ -34,5 +34,5 @@ urlpatterns = [
     path('redirect-after-login/', views.login_redirect, name='login_redirect'),
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
 
-
-]
+     path("about/", views.about_us, name="about_us"),
+]   

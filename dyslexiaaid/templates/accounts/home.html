@@ -1,81 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
-  <title>DyslexiaAid</title>
+  <title>DyslexiaAid - Empower Learning</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .gradient-bg {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    .glass-effect {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      transition: all 0.3s ease;
-      transform: translateY(0);
-    }
-    
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-    }
-    
-    .btn-secondary {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      transition: all 0.3s ease;
-      transform: translateY(0);
-    }
-    
-    .btn-secondary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
-    }
-    
-    .animate-fadeIn {
-      animation: fadeIn 0.6s ease-out;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .progress-bar {
-      height: 4px;
-      background: linear-gradient(90deg, #667eea, #764ba2);
-      border-radius: 2px;
-      transform-origin: left;
-      animation: progress 2s ease-out;
-    }
-    
-    @keyframes progress {
-      from { transform: scaleX(0); }
-      to { transform: scaleX(1); }
-    }
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .glass-effect { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease; }
+    .btn-primary:hover { box-shadow: 0 10px 25px rgba(102,126,234,0.3); transform: translateY(-2px); }
+    .section { padding: 5rem 1rem; }
   </style>
 </head>
-<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
-  <!-- Floating particles background -->
+<body class="gradient-bg min-h-screen text-gray-800 relative">
+
+  <!-- Floating circles background -->
   <div class="absolute inset-0 overflow-hidden">
-    <div class="absolute w-64 h-64 bg-white opacity-5 rounded-full -top-32 -left-32 animate-pulse"></div>
-    <div class="absolute w-48 h-48 bg-white opacity-5 rounded-full top-1/2 -right-24 animate-pulse" style="animation-delay: 1s;"></div>
-    <div class="absolute w-32 h-32 bg-white opacity-5 rounded-full bottom-10 left-1/4 animate-pulse" style="animation-delay: 2s;"></div>
+    <div class="absolute w-64 h-64 bg-white opacity-10 rounded-full -top-32 -left-32 animate-pulse"></div>
+    <div class="absolute w-48 h-48 bg-white opacity-10 rounded-full top-1/2 -right-24 animate-pulse" style="animation-delay: 1s;"></div>
+    <div class="absolute w-32 h-32 bg-white opacity-10 rounded-full bottom-10 left-1/4 animate-pulse" style="animation-delay: 2s;"></div>
   </div>
-  
-  <div class="glass-effect shadow-2xl rounded-3xl p-8 text-center w-96 animate-fadeIn relative z-10">
+
+  <!-- Navbar -->
+  <header class="fixed w-full top-0 glass-effect shadow-md z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold text-purple-700">DyslexiaAid</h1>
+      <nav class="hidden md:flex space-x-6 font-medium">
+        <a href="#features" class="hover:text-purple-600">Features</a>
+        <a href="#about" class="hover:text-purple-600">About</a>
+        <a href="#testimonials" class="hover:text-purple-600">Testimonials</a>
+      </nav>
+      <a href="{% url 'login' %}" class="btn-primary px-4 py-2 text-white rounded-lg font-semibold">Login</a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+<section class="section pt-32 text-center relative z-10">
+  <div class="max-w-3xl mx-auto glass-effect rounded-3xl p-10 shadow-2xl">
+    <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-800">
+      Empowering Dyslexic Learners with AI
+    </h2>
+    <p class="text-lg mb-6 text-gray-700">
+      DyslexiaAid helps children and independent learners improve reading, writing, and comprehension through personalized, AI-driven support.
+    </p>
+    
+    <div class="flex justify-center">
+      <a href="{% url 'parent_register' %}" 
+         class="btn-primary px-6 py-3 rounded-xl text-white font-semibold flex items-center justify-center space-x-2">
+        <i data-lucide="user-plus" class="w-5 h-5"></i>
+        <span>Get Started</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+  <!-- Features Section -->
+  <section id="features" class="section bg-white relative z-10">
+    <div class="max-w-6xl mx-auto text-center">
+      <h3 class="text-3xl font-bold mb-8 text-gray-800">App Features</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="glass-effect p-6 rounded-2xl shadow-lg">
+          <i data-lucide="brain" class="w-10 h-10 text-purple-600 mx-auto mb-4"></i>
+          <h4 class="font-semibold text-xl mb-2">AI Assistance</h4>
+          <p class="text-gray-600">Personalized reading and writing support powered by intelligent AI tools.</p>
+        </div>
+        <div class="glass-effect p-6 rounded-2xl shadow-lg">
+          <i data-lucide="book-open" class="w-10 h-10 text-purple-600 mx-auto mb-4"></i>
+          <h4 class="font-semibold text-xl mb-2">Interactive Exercises</h4>
+          <p class="text-gray-600">Engaging activities designed to improve comprehension and confidence.</p>
+        </div>
+        <div class="glass-effect p-6 rounded-2xl shadow-lg">
+          <i data-lucide="shield-check" class="w-10 h-10 text-purple-600 mx-auto mb-4"></i>
+          <h4 class="font-semibold text-xl mb-2">Safe & Supportive</h4>
+          <p class="text-gray-600">Child-friendly environment with parent and teacher dashboards.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<!-- About Section -->
+<section id="about" class="section relative z-10">
+  <div class="max-w-5xl mx-auto glass-effect p-10 rounded-3xl shadow-xl text-center">
+    <h3 class="text-3xl font-bold mb-6 text-gray-800">Why DyslexiaAid?</h3>
+    <p class="text-lg leading-relaxed text-gray-700">
+      DyslexiaAid was built to make learning accessible and empowering for dyslexic learners. 
+      With AI-driven personalized learning paths, real-time feedback, and progress tracking, 
+      we aim to support learners and their families in overcoming challenges and achieving success.
+    </p>
+
+    <a href="{% url 'about_us' %}"
+       class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:from-purple-600 hover:to-indigo-700 hover:scale-105 transition transform duration-200 mt-8">
+      <i data-lucide="info" class="w-5 h-5"></i>
+      <span>Learn More</span>
+    </a>
+  </div>
+</section>
+
+    
+  </section>
+
+  <!-- Testimonials Section -->
+  <section id="testimonials" class="section bg-white relative z-10">
+    <div class="max-w-6xl mx-auto text-center">
+      <h3 class="text-3xl font-bold mb-8 text-gray-800">What Our Users Say</h3>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="glass-effect p-6 rounded-2xl shadow-lg">
+          <p class="italic text-gray-700">"This app has changed how my child learns—reading has become fun instead of stressful."</p>
+          <span class="block mt-4 font-semibold text-gray-800">– Parent of 8-year-old</span>
+        </div>
+        <div class="glass-effect p-6 rounded-2xl shadow-lg">
+          <p class="italic text-gray-700">"I feel more confident in my writing and my grades have improved!"</p>
+          <span class="block mt-4 font-semibold text-gray-800">– Independent Learner</span>
+        </div>
+        <div class="glass-effect p-6 rounded-2xl shadow-lg">
+          <p class="italic text-gray-700">"Finally, a tool that understands dyslexic students and gives teachers real insights."</p>
+          <span class="block mt-4 font-semibold text-gray-800">– Teacher</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download / CTA Section -->
+<section id="download" class="section relative z-10">
+  <div class="max-w-3xl mx-auto glass-effect rounded-3xl p-10 shadow-2xl text-center">
+    <h3 class="text-3xl font-bold mb-4 text-gray-800">Ready to Start Learning?</h3>
+    <p class="text-lg mb-6 text-gray-700">Join DyslexiaAid today and unlock tools that make learning easier, fun, and supportive.</p>
+    
+    <!-- Changed from <a> to <button> -->
+<button id="openRegisterModal" type="button"
+  class="btn-primary block w-full px-6 py-3 rounded-xl text-white font-semibold flex items-center justify-center space-x-2 mx-auto">
+  <i data-lucide="download" class="w-5 h-5"></i>
+  <span>Sign Up Now</span>
+</button>
+  </div>
+</section>
+  <!-- Footer -->
+  <footer class="glass-effect text-gray-600 py-6 text-center relative z-10">
+    <p>&copy; 2025 DyslexiaAid. All Rights Reserved.</p>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+  </script>
+
+
+<!-- Register Modal -->
+<div id="registerModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+  <!-- Animated modal box -->
+  <div id="registerModalBox" 
+       class="glass-effect shadow-2xl rounded-3xl p-8 text-center w-96 relative z-10 transform transition-all duration-500 ease-out opacity-0 translate-y-10">
+    
+    <!-- Close Button -->
+    <button id="closeRegisterModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+      <i data-lucide="x" class="w-6 h-6"></i>
+    </button>
+
     <!-- Progress bar -->
     <div class="progress-bar mb-6"></div>
     
@@ -88,21 +170,27 @@
       <p class="text-gray-600 text-lg">A platform to support dyslexic learners with AI-powered tools.</p>
     </div>
     
-    <div class="space-y-4">
-      <a href="{% url 'login' %}" class="btn-primary block text-white py-3 rounded-xl font-semibold flex items-center justify-center space-x-2">
-        <i data-lucide="log-in" class="w-5 h-5"></i>
-        <span>Login</span>
-      </a>
-      <a href="{% url 'parent_register' %}" class="btn-secondary block text-white py-3 rounded-xl font-semibold flex items-center justify-center space-x-2">
-        <i data-lucide="user-plus" class="w-5 h-5"></i>
-        <span>Register as Parent</span>
-      </a>
-
-      <a href="{% url 'independent_register' %}" class="btn-secondary block bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center space-x-2">
-    <i data-lucide="user" class="w-5 h-5"></i>
-    <span>Register as Independent User</span>
+    <!-- Buttons -->
+<div class="space-y-4">
+  <a href="{% url 'login' %}" 
+     class="btn-primary block w-full text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2">
+    <i data-lucide="log-in" class="w-5 h-5 flex-shrink-0"></i>
+    <span class="leading-none">Login</span>
   </a>
-    </div>
+
+  <a href="{% url 'parent_register' %}" 
+     class="btn-secondary block w-full text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700">
+    <i data-lucide="user-plus" class="w-5 h-5 flex-shrink-0"></i>
+    <span class="leading-none">Register as Parent</span>
+  </a>
+
+  <a href="{% url 'independent_register' %}" 
+     class="btn-secondary block w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2">
+    <i data-lucide="user" class="w-5 h-5 flex-shrink-0"></i>
+    <span class="leading-none">Register as Independent User</span>
+  </a>
+</div>
+
     
     <!-- Features preview -->
     <div class="mt-8 pt-6 border-t border-gray-200">
@@ -122,10 +210,40 @@
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-    // Initialize Lucide icons
-    lucide.createIcons();
-  </script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const modal = document.getElementById("registerModal");
+    const modalBox = document.getElementById("registerModalBox");
+    const openBtn = document.getElementById("openRegisterModal");
+    const closeBtn = document.getElementById("closeRegisterModal");
+
+    if(openBtn) {
+      openBtn.addEventListener("click", () => {
+        modal.classList.remove("hidden");
+        // trigger animation
+        setTimeout(() => {
+          modalBox.classList.remove("opacity-0", "translate-y-10");
+          modalBox.classList.add("opacity-100", "translate-y-0");
+        }, 50);
+        lucide.createIcons();
+      });
+    }
+
+    function closeModal() {
+      modalBox.classList.add("opacity-0", "translate-y-10");
+      modalBox.classList.remove("opacity-100", "translate-y-0");
+      setTimeout(() => modal.classList.add("hidden"), 300);
+    }
+
+    closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+  });
+</script>
+
+
 </body>
 </html>

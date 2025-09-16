@@ -248,3 +248,6 @@ def edit_child_profile(request, child_id):
         "form": form,
         "child_profile": child_profile
     })
+
+def about_us(request):
+    return render(request, "accounts/about_page.html")
