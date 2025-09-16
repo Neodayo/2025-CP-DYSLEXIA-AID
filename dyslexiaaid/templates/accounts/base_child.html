@@ -158,6 +158,18 @@
     </div>
   </div>
 
+<h2 class="text-xl font-bold text-violet-900">
+  Dyslexia Type (Assigned): {{ assigned_type }}
+</h2>
+
+{% if suggested_type %}
+  <p class="text-sm text-gray-600">
+    💡 System Suggests: {{ suggested_type }}
+  </p>
+{% endif %}
+
+
+
   <!-- Enhanced Styling -->
   <style>
     .glass-effect {

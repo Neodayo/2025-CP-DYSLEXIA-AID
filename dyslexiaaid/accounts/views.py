@@ -7,7 +7,14 @@ from .forms import DyslexiaTypeForm
 from .models import CustomUser, ChildProfile # <-- add this
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
+import joblib
+import pandas as pd
+import os
 
+
+
+# Load ML model (do this once when server starts)
+ml_model = joblib.load("ml/dyslexia_model.pkl")
 
 def parent_register(request):
     if request.method == "POST":
@@ -95,27 +102,61 @@ def parent_dashboard(request):
 def child_dashboard(request, child_id):
     profile = get_object_or_404(ChildProfile, child_id=child_id)
 
-    # Access allowed if user is child/independent OR parent
-    if request.user != profile.child and request.user != getattr(profile, 'parent', None):
+    if request.user != profile.child and request.user != profile.parent:
         return HttpResponseForbidden("Not authorized.")
 
+    # ✅ Use the assigned dyslexia type (post-diagnosed)
+    assigned_type = profile.dyslexia_type  
+
+    # ✅ Optional: ML suggestion (for reference only)
+    suggested_type = None
+    try:
+        features = get_user_features(profile.child.id)
+        suggested_type = ml_model.predict([features])[0]
+    except Exception as e:
+        print("ML suggestion error:", e)
+
+    # ✅ Modules mapping
     modules_map = {
-        "Phonological dyslexia": ["Phonics Training", "Sound Recognition"],
-        "Surface dyslexia": ["Word Recognition", "Sight Words"],
-        "Visual dyslexia": ["Visual Tracking", "Reading Exercises"],
-        "Rapid naming deficit": ["Speed Reading", "Naming Drills"],
-        "Developmental dyslexia": ["General Reading", "Adaptive Lessons"],
-        "Acquired dyslexia": ["Memory Support", "Rehabilitation Exercises"],
+        "Phonological": [
+            {"id": 1, "name": "Phonics Training", "description": "Improve sound recognition.", "progress": 0},
+            {"id": 2, "name": "Sound Recognition", "description": "Practice breaking down words.", "progress": 0},
+        ],
+        "Surface": [
+            {"id": 3, "name": "Sight Words", "description": "Recognize whole words quickly.", "progress": 0},
+        ],
+        "Visual": [
+            {"id": 4, "name": "Visual Tracking", "description": "Train smooth eye movements.", "progress": 0},
+        ],
+        "Rapid Naming": [
+            {"id": 5, "name": "Naming Drills", "description": "Practice quick recall.", "progress": 0},
+        ],
+        "Developmental": [
+            {"id": 6, "name": "General Reading", "description": "Adaptive reading lessons.", "progress": 0},
+        ],
+        "Acquired": [
+            {"id": 7, "name": "Memory Support", "description": "Rehabilitation-based reading.", "progress": 0},
+        ],
     }
 
-    modules = modules_map.get(profile.dyslexia_type, [])
+    modules = modules_map.get(assigned_type, [])
+    lessons = [{"title": m["name"], "completed": False} for m in modules]
 
-    return render(
-        request,
-        "accounts/child_home.html",
-        {"child_profile": profile, "modules": modules},
-    )
+    progress_data = {
+        "points": 0,
+        "completed": 0,
+        "total": len(modules),
+        "percentage": 0,
+    }
 
+    return render(request, "accounts/base_child.html", {
+        "child_profile": profile,
+        "assigned_type": assigned_type,
+        "suggested_type": suggested_type,  # optional
+        "progress_data": progress_data,
+        "modules": modules,
+        "lessons": lessons,
+    })
 
 def home(request):
     if request.user.is_authenticated and request.user.role == "PARENT":
@@ -251,3 +292,18 @@ def edit_child_profile(request, child_id):
 
 def about_us(request):
     return render(request, "accounts/about_page.html")
+
+
+def get_user_features(user_id):
+    """
+    Fetch user-specific features.
+    For now, load a placeholder CSV. Later link with your DB or uploaded data.
+    """
+    # Example placeholder: each user gets same mock data
+    df = pd.DataFrame([{
+        "n_fix_trial": 120,
+        "mean_fix_dur_trial": 220,
+        "n_sacc_trial": 85,
+        "n_regress_trial": 15
+    }])
+    return df[["n_fix_trial", "mean_fix_dur_trial", "n_sacc_trial", "n_regress_trial"]].iloc[0].tolist()
