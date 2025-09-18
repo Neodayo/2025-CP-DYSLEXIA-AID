@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="relative z-10 max-w-4xl mx-auto p-6">
+  <h2 class="text-2xl font-bold text-violet-900 mb-6">
+    Evaluation Test – {{ dyslexia_type }}
+  </h2>
+  <p class="text-gray-600 mb-6">
+    Please answer the following {{ questions|length }} questions to help us determine the severity of {{ dyslexia_type }}.
+  </p>
+
+  <form method="POST" class="space-y-6">
+    {% csrf_token %}
+
+    <!-- Loop questions dynamically -->
+    {% for question in questions %}
+    <div class="p-4 bg-violet-50 rounded-xl shadow-sm">
+      <p class="font-medium text-gray-800 mb-2">{{ forloop.counter }}. {{ question }}</p>
+      <div class="space-y-2">
+        <!-- Add options based on question type -->
+        {% if "rhymes" in question|lower %}
+        <label class="flex items-center">
+          <input type="radio" name="q{{ forloop.counter }}" value="bat" class="mr-2"> bat
+        </label>
+        <label class="flex items-center">
+          <input type="radio" name="q{{ forloop.counter }}" value="dog" class="mr-2"> dog
+        </label>
+        <label class="flex items-center">
+          <input type="radio" name="q{{ forloop.counter }}" value="sun" class="mr-2"> sun
+        </label>
+        {% elif "syllables" in question|lower %}
+        <label class="flex items-center">
+          <input type="radio" name="q{{ forloop.counter }}" value="sun-set" class="mr-2"> sun-set
+        </label>
+        <label class="flex items-center">
+          <input type="radio" name="q{{ forloop.counter }}" value="s-unset" class="mr-2"> s-unset
+        </label>
+        <label class="flex items-center">
+          <input type="radio" name="q{{ forloop.counter }}" value="suns-et" class="mr-2"> suns-et
+        </label>
+        {% else %}
+        <!-- Default options -->
+        <label class="flex items-center">
+          <input type="radio" name="q{{ forloop.counter }}" value="option1" class="mr-2"> Option 1
+        </label>
+        <label class="flex items-center">
+          <input type="radio" name="q{{ forloop.counter }}" value="option2" class="mr-2"> Option 2
+        </label>
+        <label class="flex items-center">
+          <input type="radio" name="q{{ forloop.counter }}" value="option3" class="mr-2"> Option 3
+        </label>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Submit Button -->
+    <div class="text-center mt-8">
+      <button type="submit"
+        class="px-6 py-3 bg-violet-600 text-white font-semibold rounded-xl shadow-md hover:bg-violet-700 transition">
+        Submit Evaluation
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

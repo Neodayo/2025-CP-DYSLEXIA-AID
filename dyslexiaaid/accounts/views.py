@@ -5,6 +5,7 @@ from django.http import HttpResponseForbidden
 from .forms import ParentRegisterForm, ChildRegisterForm, IndependentRegisterForm, DyslexiaTypeForm, ChildProfileEditForm
 from .forms import DyslexiaTypeForm
 from django.contrib import messages
+import time 
 from .models import CustomUser, ChildProfile # <-- add this
 from django.shortcuts import get_object_or_404
 import joblib
@@ -149,12 +150,15 @@ def parent_dashboard(request):
     children = ChildProfile.objects.filter(parent=request.user)
     return render(request, "accounts/parent_dashboard.html", {"children": children})
 
-@login_required
 def child_dashboard(request, child_id):
     profile = get_object_or_404(ChildProfile, child_id=child_id)
 
     if request.user != profile.child and request.user != profile.parent:
         return HttpResponseForbidden("Not authorized.")
+
+    # ✅ Check if evaluation was completed (using session storage)
+    evaluation_completed = request.session.get('evaluation_completed', False)
+    dyslexia_type_evaluated = request.session.get('dyslexia_type_evaluated', '')
 
     # ✅ Use the assigned dyslexia type (post-diagnosed)
     assigned_type = profile.dyslexia_type  
@@ -207,6 +211,8 @@ def child_dashboard(request, child_id):
         "progress_data": progress_data,
         "modules": modules,
         "lessons": lessons,
+        "evaluation_completed": evaluation_completed,  # NEW: Add evaluation status
+        "dyslexia_type_evaluated": dyslexia_type_evaluated,  # NEW: Add evaluated type
     })
 
 def landing_page(request):
@@ -231,6 +237,9 @@ def introduction(request, child_id):
 def dyslexia_type_selection(request, child_id):
     profile = get_object_or_404(ChildProfile, child_id=child_id)
 
+    # Store the child ID in session for later use in evaluation
+    request.session['current_child_id'] = child_id
+
     # Parent, child, or independent can assign
     if request.user != profile.child and request.user != getattr(profile, 'parent', None):
         return HttpResponseForbidden("Not authorized.")
@@ -249,13 +258,12 @@ def dyslexia_type_selection(request, child_id):
         if selected_type in dyslexia_types:
             profile.dyslexia_type = selected_type
             profile.save()
-            return redirect("child_home", child_id=profile.child.id)
+            return redirect("evaluation_test", dyslexia_type=selected_type)
 
     return render(request, "accounts/dyslexia_type_selection.html", {
         "child_profile": profile,
         "dyslexia_types": dyslexia_types
     })
-
 
 @login_required
 def child_home(request, child_id):
@@ -340,3 +348,92 @@ def get_user_features(user_id):
         "n_regress_trial": 15
     }])
     return df[["n_fix_trial", "mean_fix_dur_trial", "n_sacc_trial", "n_regress_trial"]].iloc[0].tolist()
+
+# --------------------------------------------------Evaluation Area ---------------------------------------------------
+
+def evaluation_test(request, dyslexia_type):
+    # Question bank
+    questions_bank = {
+        "Phonological dyslexia": [
+            "Which word rhymes with 'cat'? (bat, dog, sun)",
+            "Break the word 'sunset' into syllables.",
+            "Identify the first sound in 'phone'.",
+            "Which of these words start with the same sound as 'dog'? (desk, cat, fish)",
+            "How many sounds are in the word 'ship'?",
+        ],
+        "Surface dyslexia": [
+            "What word is this? (sight word: 'the')",
+            "Which of these words looks correct? (frend / friend)",
+            "Read this word without sounding it out: 'yacht'.",
+            "Which of these is a real word? (knight / nite)",
+            "Identify the irregular word: (said, bed, red)",
+        ],
+        "Visual dyslexia": [
+            "Which direction is the letter 'b' facing?",
+            "Do you see a difference between 'was' and 'saw'?",
+            "Identify the odd one out: (p q d b).",
+            "Trace this word visually: 'elephant'.",
+            "Which number is reversed? (3, Ɛ, 5)",
+        ],
+        "Rapid naming deficit": [
+            "Say the names of these pictures quickly (dog, sun, car, ball).",
+            "Which is faster: saying the alphabet or numbers?",
+            "Read this color as fast as you can: 'red'.",
+            "Name 5 fruits as quickly as possible.",
+            "Identify this letter instantly: 'M'.",
+        ],
+        "Developmental dyslexia": [
+            "Read the word: 'basket'.",
+            "Sound out this word: 'computer'.", 
+            "What does the sentence mean: 'The dog chased the cat'?",
+            "Which word is easiest to read: (pen, apple, elephant)?",
+            "Arrange the letters to form a word: 'HAT'.",
+        ],
+        "Acquired dyslexia": [
+            "Read this word aloud: 'doctor'.",
+            "Match this picture 🐱 with the correct word (cat, dog, bat).",
+            "Which of these words is easier for you? (book / bicycle)",
+            "Read this short sentence: 'I am happy'.",
+            "Point to the correct word: (tree, free, three).",
+        ],
+    }
+
+    # Grab the correct set of questions for the chosen type
+    questions = questions_bank.get(dyslexia_type, [])
+
+# Handle form submission
+    if request.method == "POST":
+        # Store evaluation completion in session
+        request.session['evaluation_completed'] = True
+        request.session['dyslexia_type_evaluated'] = dyslexia_type
+        request.session['evaluation_timestamp'] = str(time.time())
+        
+        # Get the correct child ID
+        try:
+            # If the current user is a child/independent, use their own ID
+            if request.user.role in ["CHILD", "INDEPENDENT"]:
+                child_id = request.user.id
+            else:
+                # If the current user is a parent, get the child ID from session
+                child_id = request.session.get('current_child_id')
+                if not child_id:
+                    # Fallback: try to find the first child of the parent
+                    child_profile = ChildProfile.objects.filter(parent=request.user).first()
+                    if child_profile:
+                        child_id = child_profile.child.id
+                    else:
+                        # If no children found, redirect to parent dashboard
+                        return redirect("parent_dashboard")
+        except:
+            # If all else fails, redirect to login redirect page
+            return redirect("login_redirect")
+        
+        # Redirect to child dashboard
+        return redirect("child_dashboard", child_id=child_id)
+
+    # Handle GET request (display form)
+    context = {
+        "dyslexia_type": dyslexia_type,
+        "questions": questions,
+    }
+    return render(request, "evaluation/static_evaluation.html", context)

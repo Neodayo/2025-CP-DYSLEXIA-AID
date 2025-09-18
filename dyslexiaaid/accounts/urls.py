@@ -37,4 +37,8 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
 
      path("about/", views.about_us, name="about_us"),
+
+    path("select-type/<int:child_id>/", views.dyslexia_type_selection, name="dyslexia_type_selection"),
+    path("test/<str:dyslexia_type>/", views.evaluation_test, name="evaluation_test"),
+    # path("evaluation/result/<int:evaluation_id>/", views.evaluation_result, name="evaluation_result"),
 ]   
