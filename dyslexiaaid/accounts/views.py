@@ -44,7 +44,7 @@ def child_register(request):
     else:
         form = ChildRegisterForm()
 
-    return render(request, "accounts/child_register.html", {"form": form})
+    return render(request, "registration/child_register.html", {"form": form})
 
 
 def independent_register(request):
@@ -225,7 +225,7 @@ def child_modules(request, child_id):
     child_profile = get_object_or_404(ChildProfile, child_id=child_id)
     # Fetch modules from DB (admin uploads) – placeholder for now
     all_modules = ["Phonics Training", "Sight Words", "Visual Tracking", "Speed Reading"]
-    return render(request, "accounts/child_modules.html", {
+    return render(request, "lessons/child_modules.html", {
         "child_profile": child_profile,
         "modules": all_modules
     })

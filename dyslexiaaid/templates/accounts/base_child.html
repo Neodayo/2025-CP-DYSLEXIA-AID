@@ -128,16 +128,6 @@
           <span class="text-xl">📊</span>
           <span>Progress</span>
         </a>
-        <a href="{% url 'lesson_list' %}" 
-           class="flex items-center space-x-3 px-4 py-3 rounded-xl font-semibold transition block
-           {% if request.resolver_match.url_name == 'lesson_list' %}
-             bg-violet-100 text-violet-900
-           {% else %}
-             text-violet-900 hover:bg-violet-50
-           {% endif %}">
-          <span class="text-xl">📘</span>
-          <span>Lessons</span>
-        </a>
         <a href="{% url 'logout' %}" 
            class="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 font-semibold hover:bg-red-50 transition block">
           <span class="text-xl">🚪</span>
@@ -188,15 +178,7 @@
            {% endif %}">
           📊 Progress
         </a>
-        <a href="{% url 'lesson_list' %}" 
-           class="px-3 lg:px-4 py-2 rounded-xl font-semibold transition text-sm lg:text-base
-           {% if request.resolver_match.url_name == 'lesson_list' %}
-             bg-violet-100 text-violet-900
-           {% else %}
-             text-violet-900 hover:bg-violet-50
-           {% endif %}">
-          📘 Lessons
-        </a>
+        
         <a href="{% url 'logout' %}" 
            class="bg-white px-4 lg:px-6 py-2 rounded-xl text-red-600 font-semibold hover:bg-red-50 transition text-sm lg:text-base shadow-sm">
           🚪 Logout
