@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     # make thi direct to expected landingg pagee plss
-    path("", views.home, name="home"),
+    path("", views.landing_page, name="home"),
 
     # Parent registration
     path("register/parent/", views.parent_register, name="parent_register"),

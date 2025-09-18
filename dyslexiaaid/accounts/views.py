@@ -158,10 +158,10 @@ def child_dashboard(request, child_id):
         "lessons": lessons,
     })
 
-def home(request):
+def landing_page(request):
     if request.user.is_authenticated and request.user.role == "PARENT":
         return redirect("parent_dashboard")
-    return render(request, "accounts/home.html")
+    return render(request, "accounts/landing_page.html")
 
 @login_required
 def introduction(request, child_id):
