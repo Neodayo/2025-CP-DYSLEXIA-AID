@@ -32,13 +32,18 @@ def parent_register(request):
 def child_register(request):
     if request.user.role != "PARENT":
         return HttpResponseForbidden("Only parents can register children.")
+
     if request.method == "POST":
         form = ChildRegisterForm(request.POST)
         if form.is_valid():
-            form.save(parent_user=request.user)
-            return redirect("parent_dashboard")
+            # Save child linked to parent
+            child_user = form.save(parent_user=request.user)
+
+            # ✅ Redirect straight to dyslexia type selection page
+            return redirect("dyslexia_type_selection", child_id=child_user.id)
     else:
         form = ChildRegisterForm()
+
     return render(request, "accounts/child_register.html", {"form": form})
 
 
@@ -175,12 +180,14 @@ def introduction(request, child_id):
     return render(request, "accounts/introduction.html", {"child_profile": child_profile})
 
 
-@login_required
-def type_selection(request, child_id):
-    if request.user.role != "PARENT":
-        return HttpResponseForbidden("Only parents can assign dyslexia type.")
 
-    child_profile = get_object_or_404(ChildProfile, child_id=child_id)
+@login_required
+def dyslexia_type_selection(request, child_id):
+    profile = get_object_or_404(ChildProfile, child_id=child_id)
+
+    # Parent, child, or independent can assign
+    if request.user != profile.child and request.user != getattr(profile, 'parent', None):
+        return HttpResponseForbidden("Not authorized.")
 
     dyslexia_types = [
         "Developmental dyslexia",
@@ -192,36 +199,16 @@ def type_selection(request, child_id):
     ]
 
     if request.method == "POST":
-        dyslexia_type = request.POST.get("dyslexia_type")
-        child_profile.dyslexia_type = dyslexia_type
-        child_profile.save()
-        # ✅ After choosing → go to child dashboard
-        return redirect("child_dashboard", child_id=child_profile.child.id)
+        selected_type = request.POST.get("dyslexia_type")
+        if selected_type in dyslexia_types:
+            profile.dyslexia_type = selected_type
+            profile.save()
+            return redirect("child_home", child_id=profile.child.id)
 
-    return render(
-        request,
-        "accounts/type_selection.html",
-        {"child_profile": child_profile, "dyslexia_types": dyslexia_types},
-    )
-#for independent user to select dyslexia type
-
-@login_required
-def dyslexia_type_selection(request, child_id):
-    profile = get_object_or_404(ChildProfile, child_id=child_id)
-
-    # ✅ Only independent user can set their own type
-    if request.user != profile.child:
-        return HttpResponseForbidden("Not authorized.")
-
-    if request.method == "POST":
-        form = DyslexiaTypeForm(request.POST, instance=profile)
-        if form.is_valid():
-            form.save()
-            return redirect("child_dashboard", child_id=profile.child.id)
-    else:
-        form = DyslexiaTypeForm(instance=profile)
-
-    return render(request, "accounts/dyslexia_type_selection.html", {"form": form})
+    return render(request, "accounts/dyslexia_type_selection.html", {
+        "child_profile": profile,
+        "dyslexia_types": dyslexia_types
+    })
 
 
 @login_required

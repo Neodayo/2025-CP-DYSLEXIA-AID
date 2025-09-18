@@ -25,7 +25,7 @@ urlpatterns = [
 
     # New: Introduction and Dyslexia Type Selection
     path("child/<int:child_id>/introduction/", views.introduction, name="introduction"),
-    path("child/<int:child_id>/type-selection/", views.type_selection, name="type_selection"),
+    # path("child/<int:child_id>/type-selection/", views.type_selection, name="type_selection"),
     path("child/<int:child_id>/edit/", views.edit_child_profile, name="edit_child_profile"),
 
     path('type-selection/<int:child_id>/', views.dyslexia_type_selection, name='dyslexia_type_selection'),
