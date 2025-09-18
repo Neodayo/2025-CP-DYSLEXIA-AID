@@ -25,7 +25,7 @@ def parent_register(request):
             return redirect("parent_dashboard")
     else:
         form = ParentRegisterForm()
-    return render(request, "accounts/parent_register.html", {"form": form})
+    return render(request, "registration/parent_register.html", {"form": form})
 
 
 @login_required
@@ -62,7 +62,7 @@ def independent_register(request):
             return redirect("dyslexia_type_selection", child_id=user.id)
     else:
         form = IndependentRegisterForm()
-    return render(request, "accounts/independent_register.html", {"form": form})
+    return render(request, "registration/independent_register.html", {"form": form})
 
 
 
