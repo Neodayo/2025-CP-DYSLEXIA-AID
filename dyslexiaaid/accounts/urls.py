@@ -15,7 +15,8 @@ urlpatterns = [
     path("register/independent/", views.independent_register, name="independent_register"),
 
     # Parent dashboard
-    path("dashboard/parent/", views.parent_dashboard, name="parent_dashboard"), 
+    path("dashboard/parent/", views.parent_dashboard, name="parent_dashboard"),
+    path('delete-child/<int:child_id>/', views.delete_child, name='delete_child'), 
     path("dashboard/child/<int:child_id>/", views.child_dashboard, name="child_dashboard"),
     path("dashboard/child/<int:child_id>/", views.child_home, name="child_home"),
     path("dashboard/child/<int:child_id>/modules/", views.child_modules, name="child_modules"),

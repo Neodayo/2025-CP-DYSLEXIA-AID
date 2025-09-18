@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponseForbidden
 from .forms import ParentRegisterForm, ChildRegisterForm, IndependentRegisterForm, DyslexiaTypeForm, ChildProfileEditForm
 from .forms import DyslexiaTypeForm
+from django.contrib import messages
 from .models import CustomUser, ChildProfile # <-- add this
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
@@ -27,6 +28,27 @@ def parent_register(request):
         form = ParentRegisterForm()
     return render(request, "registration/parent_register.html", {"form": form})
 
+@login_required
+def delete_child(request, child_id):
+    """Delete a child user and their profile"""
+    if request.user.role != "PARENT":
+        return HttpResponseForbidden("Only parents can delete children.")
+    
+    # Get the child user and verify they belong to this parent
+    child_user = get_object_or_404(CustomUser, id=child_id, role="CHILD")
+    child_profile = get_object_or_404(ChildProfile, child=child_user, parent=request.user)
+    
+    if request.method == "POST":
+        # Delete the child user and their profile
+        child_user.delete()  # This will also delete the ChildProfile due to CASCADE
+        messages.success(request, f"Successfully deleted {child_user.username}'s account.")
+        return redirect("parent_dashboard")
+    
+    # For GET requests, show confirmation page
+    return render(request, "accounts/delete_child_confirm.html", {
+        "child_user": child_user,
+        "child_profile": child_profile
+    })
 
 @login_required
 def child_register(request):
