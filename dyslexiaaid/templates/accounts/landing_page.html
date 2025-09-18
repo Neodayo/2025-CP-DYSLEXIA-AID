@@ -47,14 +47,12 @@
       DyslexiaAid helps children and independent learners improve reading, writing, and comprehension through personalized, AI-driven support.
     </p>
     
-    <div class="flex justify-center">
-      <a href="{% url 'parent_register' %}" 
-         class="btn-primary px-6 py-3 rounded-xl text-white font-semibold flex items-center justify-center space-x-2">
-        <i data-lucide="user-plus" class="w-5 h-5"></i>
-        <span>Get Started</span>
-      </a>
-    </div>
-  </div>
+
+ <div class="flex justify-center">
+  <button id="openRegisterModal" type="button" class="btn-primary px-6 py-3 rounded-xl text-white font-semibold flex justify-center">
+  Get Started
+</button>
+</div>
 </section>
 
   <!-- Features Section -->
@@ -91,11 +89,13 @@
       we aim to support learners and their families in overcoming challenges and achieving success.
     </p>
 
-    <a href="{% url 'about_us' %}"
-       class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:from-purple-600 hover:to-indigo-700 hover:scale-105 transition transform duration-200 mt-8">
-      <i data-lucide="info" class="w-5 h-5"></i>
-      <span>Learn More</span>
-    </a>
+<div class="flex justify-center mt-8">
+  <a href="{% url 'about_us' %}"
+     class="btn-primary px-6 py-3 rounded-xl text-white font-semibold flex justify-center items-center space-x-2">
+    <span>Learn More</span>
+  </a>
+</div>
+
   </div>
 </section>
 
@@ -129,7 +129,6 @@
     <h3 class="text-3xl font-bold mb-4 text-gray-800">Ready to Start Learning?</h3>
     <p class="text-lg mb-6 text-gray-700">Join DyslexiaAid today and unlock tools that make learning easier, fun, and supportive.</p>
     
-    <!-- Changed from <a> to <button> -->
 <button id="openRegisterModal" type="button"
   class="btn-primary block w-full px-6 py-3 rounded-xl text-white font-semibold flex items-center justify-center space-x-2 mx-auto">
   <i data-lucide="download" class="w-5 h-5"></i>
