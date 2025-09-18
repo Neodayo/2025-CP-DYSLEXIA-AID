@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect
 from django.http import HttpResponseForbidden
 from .forms import ParentRegisterForm, ChildRegisterForm, IndependentRegisterForm, DyslexiaTypeForm, ChildProfileEditForm
@@ -7,7 +7,6 @@ from .forms import DyslexiaTypeForm
 from django.contrib import messages
 from .models import CustomUser, ChildProfile # <-- add this
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import logout
 import joblib
 import pandas as pd
 import os
@@ -49,6 +48,31 @@ def delete_child(request, child_id):
         "child_user": child_user,
         "child_profile": child_profile
     })
+
+@login_required
+def switch_to_child(request, child_id):
+    """Switch from parent to child account"""
+    if request.user.role != "PARENT":
+        return HttpResponseForbidden("Only parents can switch to child accounts.")
+    
+    # Get the child user
+    child_user = get_object_or_404(CustomUser, id=child_id, role='CHILD')
+    
+    # Verify this child belongs to the parent
+    try:
+        child_profile = ChildProfile.objects.get(child=child_user, parent=request.user)
+    except ChildProfile.DoesNotExist:
+        return HttpResponseForbidden("You can only switch to your own children.")
+    
+    # Store original parent in session
+    request.session['original_user_id'] = request.user.id
+    request.session['is_impersonating'] = True
+    
+    # Log in as child (this changes the actual authenticated user)
+    login(request, child_user)
+    
+    # Redirect to child's dashboard
+    return redirect('child_dashboard', child_id=child_id)
 
 @login_required
 def child_register(request):

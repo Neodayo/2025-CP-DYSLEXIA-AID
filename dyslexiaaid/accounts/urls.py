@@ -17,6 +17,8 @@ urlpatterns = [
     # Parent dashboard
     path("dashboard/parent/", views.parent_dashboard, name="parent_dashboard"),
     path('delete-child/<int:child_id>/', views.delete_child, name='delete_child'), 
+    path('switch-to-child/<int:child_id>/', views.switch_to_child, name='switch_to_child'), # for logging in child in parent dashboard
+
     path("dashboard/child/<int:child_id>/", views.child_dashboard, name="child_dashboard"),
     path("dashboard/child/<int:child_id>/", views.child_home, name="child_home"),
     path("dashboard/child/<int:child_id>/modules/", views.child_modules, name="child_modules"),
