@@ -1,74 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Alpine.js for modal toggles -->
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Select Dyslexia Type</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .glass-effect { 
+      background: rgba(255, 255, 255, 0.9); 
+      backdrop-filter: blur(10px); 
+      border: 1px solid rgba(255, 255, 255, 0.2); 
+    }
+    .btn-primary { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover { 
+      box-shadow: 0 10px 25px rgba(102,126,234,0.3); 
+      transform: translateY(-2px); 
+    }
+    /* Optional slower pulse animation */
+    @keyframes pulse-slow {
+      0%, 100% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.1); opacity: 0.5; }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 6s infinite ease-in-out;
+    }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex items-center justify-center">
-  <div class="max-w-md bg-white p-6 rounded-xl shadow-lg" x-data="{ openModal: null }">
-    <h1 class="text-2xl font-bold mb-6 text-center text-violet-900">Select Dyslexia Type</h1>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4 relative overflow-hidden" x-data="{ openModal: null }">
+
+  <!-- Glowing circles background -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="absolute w-64 h-64 bg-white opacity-5 rounded-full -top-32 -left-32 animate-pulse"></div>
+    <div class="absolute w-48 h-48 bg-white opacity-5 rounded-full top-1/2 -right-24 animate-pulse" style="animation-delay: 1s;"></div>
+    <div class="absolute w-32 h-32 bg-white opacity-5 rounded-full bottom-10 left-1/4 animate-pulse" style="animation-delay: 2s;"></div>
+  </div>
+
+  <!-- Main card -->
+  <div class="relative z-10 max-w-md w-full glass-effect p-6 sm:p-8 rounded-3xl shadow-2xl">
+    <h1 class="text-2xl sm:text-3xl font-bold mb-6 text-center text-purple-700">Select Dyslexia Type</h1>
 
     <div class="space-y-3">
       {% for option in dyslexia_types %}
-        <!-- Button opens modal -->
         <button type="button"
           @click="openModal = '{{ option }}'"
-          class="w-full block bg-purple-100 hover:bg-purple-200 text-purple-700 font-medium py-2 px-4 rounded-lg">
+          class="w-full block btn-primary text-white font-semibold py-2 px-4 rounded-xl text-sm sm:text-base">
           {{ option }}
         </button>
-
-        <!-- Modal -->
-        <div
-          x-show="openModal === '{{ option }}'"
-          class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-          style="display: none;"
-        >
-          <div class="bg-white rounded-xl p-6 w-96 shadow-xl">
-            <h2 class="text-lg font-semibold mb-3 text-violet-800">{{ option }}</h2>
-            <p class="text-gray-600 text-sm mb-4">
-              {% if option == "Phonological dyslexia" %}
-                Difficulty breaking down words into sounds (phonemes).
-                <br><strong>Recommended Modules:</strong> 📘 Phonics Training
-              {% elif option == "Surface dyslexia" %}
-                Struggles with recognizing whole words instantly.
-                <br><strong>Recommended Modules:</strong> 📘 Sight Words
-              {% elif option == "Visual dyslexia" %}
-                Reading difficulties due to visual processing issues.
-                <br><strong>Recommended Modules:</strong> 📘 Visual Tracking
-              {% elif option == "Rapid naming deficit" %}
-                Slow recall of letters or words, reducing fluency.
-                <br><strong>Recommended Modules:</strong> 📘 Speed Reading
-              {% elif option == "Developmental dyslexia" %}
-                A broad reading disorder affecting decoding and fluency.
-                <br><strong>Recommended Modules:</strong> 
-                📘 Phonics Training, 📘 Sight Words, 📘 Visual Tracking, 📘 Speed Reading
-              {% elif option == "Acquired dyslexia" %}
-                Reading problems developed after brain injury or stroke.
-                <br><strong>Recommended Modules:</strong> 📘 Sight Words, 📘 Visual Tracking
-              {% endif %}
-            </p>
-
-            <!-- Actions -->
-            <form method="POST" class="flex justify-end space-x-2">
-              {% csrf_token %}
-              <input type="hidden" name="dyslexia_type" value="{{ option }}">
-              <button type="button"
-                @click="openModal = null"
-                class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
-                Cancel
-              </button>
-              <button type="submit"
-                class="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700">
-                Select
-              </button>
-            </form>
-          </div>
-        </div>
       {% endfor %}
     </div>
   </div>
+
+  <!-- Modals: outside the card -->
+  {% for option in dyslexia_types %}
+  <div
+    x-show="openModal === '{{ option }}'"
+    x-transition.opacity
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    @click.self="openModal = null"
+    style="display: none;"
+  >
+    <div class="glass-effect rounded-2xl sm:rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative">
+      <!-- Close Button -->
+      <button @click="openModal = null" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">✕</button>
+
+      <!-- Modal Header -->
+      <h2 class="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-purple-700">{{ option }}</h2>
+      <p class="text-gray-700 text-sm sm:text-base mb-4 leading-relaxed">
+        {% if option == "Phonological dyslexia" %}
+          Difficulty breaking down words into sounds (phonemes).<br>
+          <strong>Recommended Modules:</strong> 📘 Phonics Training
+        {% elif option == "Surface dyslexia" %}
+          Struggles with recognizing whole words instantly.<br>
+          <strong>Recommended Modules:</strong> 📘 Sight Words
+        {% elif option == "Visual dyslexia" %}
+          Reading difficulties due to visual processing issues.<br>
+          <strong>Recommended Modules:</strong> 📘 Visual Tracking
+        {% elif option == "Rapid naming deficit" %}
+          Slow recall of letters or words, reducing fluency.<br>
+          <strong>Recommended Modules:</strong> 📘 Speed Reading
+        {% elif option == "Developmental dyslexia" %}
+          A broad reading disorder affecting decoding and fluency.<br>
+          <strong>Recommended Modules:</strong> 📘 Phonics Training, 📘 Sight Words, 📘 Visual Tracking, 📘 Speed Reading
+        {% elif option == "Acquired dyslexia" %}
+          Reading problems developed after brain injury or stroke.<br>
+          <strong>Recommended Modules:</strong> 📘 Sight Words, 📘 Visual Tracking
+        {% endif %}
+      </p>
+
+      <!-- Actions -->
+      <form method="POST" class="flex justify-end space-x-2">
+        {% csrf_token %}
+        <input type="hidden" name="dyslexia_type" value="{{ option }}">
+        <button type="button"
+          @click="openModal = null"
+          class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+          Cancel
+        </button>
+        <button type="submit"
+          class="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700">
+          Select
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+
 </body>
 </html>
