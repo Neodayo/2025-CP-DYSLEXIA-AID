@@ -157,8 +157,8 @@ def child_dashboard(request, child_id):
         return HttpResponseForbidden("Not authorized.")
 
     # ✅ Check if evaluation was completed (using session storage)
-    evaluation_completed = request.session.get('evaluation_completed', False)
-    dyslexia_type_evaluated = request.session.get('dyslexia_type_evaluated', '')
+    evaluation_completed = request.session.pop('evaluation_completed', False)
+    dyslexia_type_evaluated = request.session.pop('dyslexia_type_evaluated', '')
 
     # ✅ Use the assigned dyslexia type (post-diagnosed)
     assigned_type = profile.dyslexia_type  
