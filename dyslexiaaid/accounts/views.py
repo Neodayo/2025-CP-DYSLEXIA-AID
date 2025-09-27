@@ -10,6 +10,7 @@ from .models import CustomUser, ChildProfile
 import joblib
 import pandas as pd
 import os
+from django.utils import timezone
 
 
 
@@ -52,31 +53,36 @@ def delete_child(request, child_id):
     })
 
 @login_required
-def switch_to_child(request, child_id):
-    """Switch from parent to child account"""
-    if request.user.role != "PARENT":
-        return HttpResponseForbidden("Only parents can switch to child accounts.")
+def switch_to_child(request, child_id=0):
+    # If child_id is 0, check for POST data
+    if child_id == 0:
+        child_id = request.POST.get('child_id')
+        if not child_id:
+            messages.error(request, "No child selected.")
+            return redirect('parent_dashboard')
     
-    # Get the child user
-    child_user = get_object_or_404(CustomUser, id=child_id, role='CHILD')
+    # Rest of your existing code...
+    if request.user.role != 'PARENT':
+        messages.error(request, "Only parents can switch to child accounts.")
+        return redirect('parent_dashboard')
     
-    # Verify this child belongs to the parent
-    try:
-        child_profile = ChildProfile.objects.get(child=child_user, parent=request.user)
-    except ChildProfile.DoesNotExist:
-        return HttpResponseForbidden("You can only switch to your own children.")
+    child_profile = get_object_or_404(ChildProfile, id=child_id, parent=request.user)
+    child_user = child_profile.child
     
-    # Store original parent in session
-    request.session['original_user_id'] = request.user.id
+    # Store parent session data
+    request.session['original_parent'] = {
+        'id': request.user.id,
+        'username': request.user.username,
+        'email': request.user.email
+    }
+    request.session['child_login_time'] = timezone.now().isoformat()
     request.session['is_impersonating'] = True
-    request.session['parent_username'] = request.user.username  # Store for easy reference
     
-    # Log in as child (this changes the actual authenticated user)
+    # Log in the child user
     login(request, child_user)
     
-    # Redirect to child's dashboard
-    return redirect('child_dashboard', child_id=child_id)
-
+    messages.success(request, f"Now logged in as {child_user.username}")
+    return redirect('child_dashboard')
 
 
 
@@ -287,15 +293,21 @@ def child_dashboard(request, child_id):
     }
 
     return render(request, "accounts/base_child.html", {
+        "user": profile.child,  # CHANGED: Pass child as 'user'
         "child_profile": profile,
         "assigned_type": assigned_type,
-        "suggested_type": suggested_type,  # optional
+        "suggested_type": suggested_type,
         "progress_data": progress_data,
         "modules": modules,
         "lessons": lessons,
-        "evaluation_completed": evaluation_completed,  # NEW: Add evaluation status
-        "dyslexia_type_evaluated": dyslexia_type_evaluated,  # NEW: Add evaluated type
+        "evaluation_completed": evaluation_completed,
+        "dyslexia_type_evaluated": dyslexia_type_evaluated,
+        "actual_user": request.user,  # ADD: Keep reference to actual logged-in user
     })
+
+
+
+
 
 def landing_page(request):
     if request.user.is_authenticated and request.user.role == "PARENT":

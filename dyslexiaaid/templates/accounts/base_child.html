@@ -213,24 +213,40 @@
   </div>
 
 
-  <!-- Main Content -->
-  <div class="relative z-10 max-w-5xl mx-auto p-4 lg:p-6">
+ <!-- Main Content -->
+<div class="relative z-10 max-w-5xl mx-auto p-4 lg:p-6">
     <div class="bg-white shadow-2xl rounded-3xl p-4 sm:p-6 lg:p-8 mt-4 lg:mt-6 animate-fadeIn" style="animation-delay: 0.2s;">
       {% block content %}
+        <!-- User Info -->
+        <div class="mb-4 p-3 bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg border border-violet-200">
+          <p class="text-sm font-medium text-violet-800">
+            👤 <span class="font-semibold">Current User:</span> {{ child_profile.child.username }}
+          </p>
+          <p class="text-sm font-medium text-violet-700">
+            🎯 <span class="font-semibold">Role:</span> {{ child_profile.child.get_role_display }}
+          </p>
+          {% if child_profile.child.role == "CHILD" and child_profile.parent %}
+            <p class="text-sm font-medium text-violet-600">
+              👨‍👩‍👧‍👦 <span class="font-semibold">Parent:</span> {{ child_profile.parent.username }}
+            </p>
+          {% endif %}
+        </div>
+
         <!-- Dyslexia Type Info -->
-  <div class="relative z-10 max-w-5xl mx-auto p-4 lg:p-6">
-    <h2 class="text-xl font-bold text-violet-900">
-      Dyslexia Type (Assigned): {{ assigned_type }}
-    </h2>
-    {% if suggested_type %}
-      <p class="text-sm text-gray-100">
-        💡 System Suggests: {{ suggested_type }}
-      </p>
-    {% endif %}
-  </div>
+        <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+          <h2 class="text-xl font-bold text-violet-900 mb-2">
+            Dyslexia Type (Assigned): {{ assigned_type }}
+          </h2>
+          {% if suggested_type %}
+            <p class="text-sm text-gray-700">
+              💡 <span class="font-semibold">System Suggests:</span> {{ suggested_type }}
+            </p>
+          {% endif %}
+        </div>
       {% endblock %}
     </div>
-  </div>
+</div>
+  
 
   {% if evaluation_completed %}
 <!-- Evaluation Completion Modal -->
