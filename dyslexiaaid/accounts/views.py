@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,user_passes_test
 from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect
 from django.http import HttpResponseForbidden
@@ -6,11 +6,13 @@ from .forms import ParentRegisterForm, ChildRegisterForm, IndependentRegisterFor
 from .forms import DyslexiaTypeForm
 from django.contrib import messages
 import time 
-from .models import CustomUser, ChildProfile # <-- add this
+from .models import CustomUser, ChildProfile
 from django.shortcuts import get_object_or_404
 import joblib
 import pandas as pd
 import os
+
+
 
 
 
@@ -150,6 +152,83 @@ def parent_dashboard(request):
     children = ChildProfile.objects.filter(parent=request.user)
     return render(request, "accounts/parent_dashboard.html", {"children": children})
 
+
+
+def is_parent(user):
+    """Check if user has PARENT role"""
+    return user.is_authenticated and user.role == 'PARENT'
+
+@login_required
+@user_passes_test(is_parent, login_url='/access-denied/')
+def parent_dashboard(request):
+    """Parent dashboard view - only accessible to PARENT role users"""
+    if request.user.role != "PARENT":
+        return HttpResponseForbidden("Only parents can access this page.")
+    
+    children_profiles = ChildProfile.objects.filter(parent=request.user)
+    
+    return render(request, "accounts/parent_dashboard.html", {"children": children_profiles})
+
+@login_required
+@user_passes_test(is_parent, login_url='/access-denied/')
+def switch_to_child(request, child_id):
+    """Switch to child account - only accessible to parents"""
+    if request.method == 'POST':
+        try:
+            child_profile = ChildProfile.objects.get(child__id=child_id, parent=request.user)
+            request.session['child_user_id'] = child_id
+            messages.success(request, f"Switched to {child_profile.child.username}'s account")
+            return redirect('child_dashboard', child_id=child_id)
+        except ChildProfile.DoesNotExist:
+            messages.error(request, "Invalid child account")
+            return redirect('parent_dashboard')
+    return redirect('parent_dashboard')
+
+@login_required
+@user_passes_test(is_parent, login_url='/access-denied/')
+def delete_child(request, child_id):
+    """Delete child account - only accessible to parents"""
+    if request.method == 'POST':
+        try:
+            child_profile = ChildProfile.objects.get(child__id=child_id, parent=request.user)
+            child_user = child_profile.child
+            username = child_user.username
+            child_profile.delete()
+            child_user.delete()
+            messages.success(request, f"Child account {username} deleted successfully")
+        except ChildProfile.DoesNotExist:
+            messages.error(request, "Invalid child account")
+    
+    return redirect('parent_dashboard')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def child_dashboard(request, child_id):
     profile = get_object_or_404(ChildProfile, child_id=child_id)
 
@@ -230,6 +309,7 @@ def introduction(request, child_id):
         return redirect("type_selection", child_id=child_profile.child.id)
 
     return render(request, "accounts/introduction.html", {"child_profile": child_profile})
+    
 
 
 
@@ -437,3 +517,10 @@ def evaluation_test(request, dyslexia_type):
         "questions": questions,
     }
     return render(request, "evaluation/static_evaluation.html", context)
+
+
+
+
+
+
+
