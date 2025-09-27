@@ -5,4 +5,7 @@ urlpatterns = [
     path("", views.lesson_list, name="lesson_list"),
     path("<int:pk>/", views.lesson_detail, name="lesson_detail"),
     path("<int:lesson_id>/record/", views.record_attempt, name="record_attempt"),
+
+
+    path("dashboard/child/<int:child_id>/modules/", views.child_modules, name="child_modules"),
 ]

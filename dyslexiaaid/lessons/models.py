@@ -1,6 +1,9 @@
 from django.db import models
 from django.conf import settings
 
+# =========================
+# Dyslexia Types
+# =========================
 DYSLEXIA_TYPES = [
     ("Developmental", "Developmental"),
     ("Acquired", "Acquired"),
@@ -10,7 +13,39 @@ DYSLEXIA_TYPES = [
     ("Visual", "Visual"),
 ]
 
+
+# =========================
+# DyslexiaType Model
+# =========================
+class DyslexiaType(models.Model):
+    name = models.CharField(max_length=50, choices=DYSLEXIA_TYPES, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+# =========================
+# Module Model
+# =========================
+class Module(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, default="")
+    dyslexia_types = models.ManyToManyField(DyslexiaType, related_name="modules")  # <-- multiple types
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+# =========================
+# Lesson Model
+# =========================
 class Lesson(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, null=True, blank=True, related_name="lessons")
+
     title = models.CharField(max_length=200)
     # Core reading content (shown and read aloud by TTS)
     content_text = models.TextField()
@@ -40,9 +75,16 @@ class Lesson(models.Model):
         return self.title
 
 
+# =========================
+# Attempt Model
+# =========================
 class Attempt(models.Model):
     # store who answered (we’ll store the *user* id; if your child user is CustomUser this is fine)
-    child = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="lesson_attempts")
+    child = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="lesson_attempts"
+    )
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="attempts")
 
     # what they answered and result
@@ -58,3 +100,6 @@ class Attempt(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.child} - {self.lesson} - {'Correct' if self.is_correct else 'Wrong'}"

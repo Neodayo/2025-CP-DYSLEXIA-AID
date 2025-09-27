@@ -5,8 +5,22 @@ from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
 import json
 
-from .models import Lesson, Attempt
-from accounts.models import ChildProfile  # assuming you already have this
+from .models import Lesson, Attempt, Module
+from accounts.models import ChildProfile 
+
+
+
+def child_modules(request, child_id):
+    # Get the child profile
+    child_profile = get_object_or_404(ChildProfile, child_id=child_id)
+
+    # Fetch all modules (later you can filter by dyslexia_type if needed)
+    modules = Module.objects.all()
+
+    return render(request, "lessons/child_modules.html", {
+        "child_profile": child_profile,
+        "modules": modules,
+    })
 
 @login_required
 def lesson_list(request):

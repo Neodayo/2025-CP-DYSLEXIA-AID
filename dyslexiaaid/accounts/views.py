@@ -369,15 +369,6 @@ def child_home(request, child_id):
         "progress": progress
     })
 
-@login_required
-def child_modules(request, child_id):
-    child_profile = get_object_or_404(ChildProfile, child_id=child_id)
-    # Fetch modules from DB (admin uploads) – placeholder for now
-    all_modules = ["Phonics Training", "Sight Words", "Visual Tracking", "Speed Reading"]
-    return render(request, "lessons/child_modules.html", {
-        "child_profile": child_profile,
-        "modules": all_modules
-    })
 
 @login_required
 def child_profile(request, child_id):
