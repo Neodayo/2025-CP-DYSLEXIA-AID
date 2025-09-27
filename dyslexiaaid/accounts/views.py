@@ -1,13 +1,12 @@
-from django.contrib.auth.decorators import login_required,user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login, logout
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,  get_object_or_404
 from django.http import HttpResponseForbidden
 from .forms import ParentRegisterForm, ChildRegisterForm, IndependentRegisterForm, DyslexiaTypeForm, ChildProfileEditForm
 from .forms import DyslexiaTypeForm
 from django.contrib import messages
 import time 
 from .models import CustomUser, ChildProfile
-from django.shortcuts import get_object_or_404
 import joblib
 import pandas as pd
 import os
@@ -70,12 +69,16 @@ def switch_to_child(request, child_id):
     # Store original parent in session
     request.session['original_user_id'] = request.user.id
     request.session['is_impersonating'] = True
+    request.session['parent_username'] = request.user.username  # Store for easy reference
     
     # Log in as child (this changes the actual authenticated user)
     login(request, child_user)
     
     # Redirect to child's dashboard
     return redirect('child_dashboard', child_id=child_id)
+
+
+
 
 @login_required
 def child_register(request):
