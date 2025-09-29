@@ -426,177 +426,178 @@ def get_user_features(user_id):
 @login_required
 
 def evaluation_test(request, dyslexia_type):
-    # Enhanced question bank with type-specific interactions
     questions_bank = {
         "Phonological dyslexia": [
             {
                 "id": 1,
                 "text": "Say the word 'cat' aloud and record your pronunciation.",
-                "interaction": "speech_recognition",  # Fixed: was "speech_recognition"
+                "interaction": "speech_recognition",
                 "expected": "cat",
                 "hint": "Speak clearly into your microphone"
             },
             {
                 "id": 2, 
-                "text": "Break the word 'sunset' into individual sounds (phonemes).",
-                "interaction": "speech_recognition",  # Changed from "phoneme_segmentation"
-                "expected": "s-u-n-s-e-t",
-                "hint": "Say each sound separately"
+                "text": "Break the word 'sun' into individual sounds (phonemes).",
+                "interaction": "speech_recognition",
+                "expected": "s u n",
+                "hint": "Say each sound separately: s - u - n"
             },
             {
                 "id": 3,
-                "text": "Which word rhymes with 'bat'? Speak your answer.",
-                "interaction": "speech_recognition",  # Changed from "rhyme_recognition"
-                "expected": ["cat", "hat", "mat", "rat", "sat"],
+                "text": "Which word rhymes with 'bat'? Choose one.",
+                "interaction": "multiple_choice",
+                "options": ["cat", "bed", "book", "run"],
+                "expected": "cat",
                 "hint": "Think of words that sound similar at the end"
             },
             {
                 "id": 4,
-                "text": "Identify the first sound in 'phone'. Record your answer.",
-                "interaction": "speech_recognition",  # Changed from "phoneme_identification"
+                "text": "What is the first sound you hear in 'fish'?",
+                "interaction": "multiple_choice",
+                "options": ["f", "sh", "i", "h"],
                 "expected": "f",
                 "hint": "Focus on the beginning sound"
             },
             {
                 "id": 5,
-                "text": "Blend these sounds together: /s/ /u/ /n/",
-                "interaction": "speech_recognition",  # Changed from "sound_blending"
-                "expected": "sun",
-                "hint": "Say the sounds quickly together"
+                "text": "Blend these sounds together: /b/ /a/ /t/",
+                "interaction": "speech_recognition",
+                "expected": "bat",
+                "hint": "Say the sounds quickly together: b-a-t"
             }
         ],
         "Surface dyslexia": [
             {
                 "id": 1,
-                "text": "Read this irregular word aloud: 'yacht'",
-                "interaction": "speech_recognition",  # Changed from "word_recognition"
+                "text": "Read this word aloud: 'yacht'",
+                "interaction": "speech_recognition",
                 "expected": "yacht",
                 "hint": "Try to recognize the whole word"
             },
             {
                 "id": 2,
-                "text": "Which spelling is correct? 'friend' or 'frend'?",
-                "interaction": "spelling_recognition",
+                "text": "Which spelling is correct?",
+                "interaction": "multiple_choice",
+                "options": ["friend", "frend"],
                 "expected": "friend",
                 "hint": "Think about common spelling patterns"
             },
             {
                 "id": 3,
-                "text": "Read this sight word quickly: 'the'",
-                "interaction": "speech_recognition",  # Changed from "rapid_naming"
+                "text": "Read this sight word: 'the'",
+                "interaction": "speech_recognition",
                 "expected": "the",
-                "hint": "Say it as fast as you can"
+                "hint": "Say it naturally"
             },
             {
                 "id": 4,
-                "text": "Identify the real word: 'knight' or 'nite'?",
-                "interaction": "word_authenticity",
+                "text": "Which word is spelled correctly?",
+                "interaction": "multiple_choice",
+                "options": ["knight", "nite"],
                 "expected": "knight",
                 "hint": "Consider standard English spelling"
             },
             {
                 "id": 5,
-                "text": "Read this sentence: 'The said was red' - does it make sense?",
-                "interaction": "speech_recognition",  # Changed from "context_understanding"
-                "expected": "no",
+                "text": "Does this sentence make sense? 'The cat sat on the mat.'",
+                "interaction": "multiple_choice",
+                "options": ["Yes", "No"],
+                "expected": "Yes",
                 "hint": "Think about word meaning in context"
             }
         ],
         "Visual dyslexia": [
             {
                 "id": 1,
-                "text": "Which direction is the letter 'b' facing? Left or right?",
-                "interaction": "multiple_choice",  # Changed from "letter_orientation"
-                "options": ["Left", "Right"],
-                "expected": "right",
-                "hint": "Visualize the letter shape"
+                "text": "Which letter is different? b d p q",
+                "interaction": "multiple_choice",
+                "options": ["b", "d", "p", "q"],
+                "expected": "q",
+                "hint": "Look carefully at each letter shape"
             },
             {
                 "id": 2,
-                "text": "Do 'was' and 'saw' look the same or different?",
-                "interaction": "multiple_choice",  # Changed from "word_reversal"
-                "options": ["Same", "Different"],
-                "expected": "different",
+                "text": "Do these words look the same? 'was' and 'saw'",
+                "interaction": "multiple_choice",
+                "options": ["Yes", "No"],
+                "expected": "No",
                 "hint": "Look at the letter order"
             },
             {
                 "id": 3,
-                "text": "Trace the shape of the word 'elephant' with your finger on screen.",
-                "interaction": "visual_tracking",
-                "expected": "completed",
-                "hint": "Follow the word smoothly"
+                "text": "Find the matching shapes: circle circle square triangle",
+                "interaction": "multiple_choice",
+                "options": ["1st and 2nd", "2nd and 3rd", "3rd and 4th", "All different"],
+                "expected": "1st and 2nd",
+                "hint": "Look for identical shapes"
             },
             {
                 "id": 4,
-                "text": "Find the letter 'p' among these: q d b p",
-                "interaction": "multiple_choice",  # Changed from "visual_search"
-                "options": ["1st", "2nd", "3rd", "4th"],
-                "expected": "4th",
-                "hint": "Scan carefully left to right"
+                "text": "Which word has no reversed letters?",
+                "interaction": "multiple_choice",
+                "options": ["bog", "dog", "qog", "pog"],
+                "expected": "dog",
+                "hint": "Look for normally oriented letters"
             },
             {
                 "id": 5,
-                "text": "Which number looks reversed? 3, Ɛ, 5, 8",
-                "interaction": "multiple_choice",  # Changed from "number_reversal"
-                "options": ["3", "Ɛ", "5", "8"],
-                "expected": "Ɛ",
+                "text": "Which number looks normal?",
+                "interaction": "multiple_choice",
+                "options": ["2", "5", "Ɛ", "7"],
+                "expected": "7",
                 "hint": "Think about normal number shapes"
             }
         ],
         "Rapid naming deficit": [
             {
                 "id": 1,
-                "text": "Name these pictures as fast as you can: 🐱 🚗 🌞 🏀",
-                "interaction": "rapid_picture_naming",
-                "expected": ["cat", "car", "sun", "ball"],
+                "text": "Name these colors: red yellow blue green",
+                "interaction": "speech_recognition",
+                "expected": ["red", "yellow", "blue", "green"],
                 "timed": True,
-                "time_limit": 5,
-                "hint": "Say the names quickly without pausing"
+                "time_limit": 8,
+                "hint": "Say the color names in order"
             },
             {
                 "id": 2,
-                "text": "Say the alphabet from A to Z as fast as you can.",
-                "interaction": "speech_recognition",  # Changed from "alphabet_naming"
-                "expected": "a b c d e f g h i j k l m n o p q r s t u v w x y z",
+                "text": "Say the days of the week starting from Monday",
+                "interaction": "speech_recognition",
+                "expected": "monday tuesday wednesday thursday friday saturday sunday",
                 "timed": True,
                 "time_limit": 10,
                 "hint": "Go as fast as you can while being clear"
             },
             {
                 "id": 3,
-                "text": "Read these colors quickly: RED BLUE GREEN YELLOW",
-                "interaction": "color_naming",
-                "expected": ["red", "blue", "green", "yellow"],
+                "text": "Name these shapes: star heart diamond club",
+                "interaction": "speech_recognition",
+                "expected": ["star", "heart", "diamond", "club"],
                 "timed": True,
-                "time_limit": 4,
-                "hint": "Say the color names rapidly"
+                "time_limit": 6,
+                "hint": "Say the shape names in order"
             },
             {
                 "id": 4,
-                "text": "Name 5 animals in 3 seconds.",
-                "interaction": "speech_recognition",  # Changed from "category_naming"
-                "expected": "any_5_animals",
+                "text": "Count from 1 to 10",
+                "interaction": "speech_recognition",
+                "expected": "one two three four five six seven eight nine ten",
                 "timed": True,
-                "time_limit": 3,
-                "hint": "Think of common animals quickly"
+                "time_limit": 8,
+                "hint": "Say the numbers in order quickly"
             },
             {
                 "id": 5,
-                "text": "Read these numbers: 5 8 2 9 1",
-                "interaction": "speech_recognition",  # Changed from "number_naming"
-                "expected": ["five", "eight", "two", "nine", "one"],
+                "text": "Name these animals: dog cat mouse rabbit",
+                "interaction": "speech_recognition",
+                "expected": ["dog", "cat", "mouse", "rabbit"],
                 "timed": True,
-                "time_limit": 3,
-                "hint": "Say the numbers in order quickly"
+                "time_limit": 6,
+                "hint": "Say the animal names rapidly"
             }
         ]
     }
 
-    # Get the question set for this dyslexia type
     questions = questions_bank.get(dyslexia_type, [])
-    
-    # Debug: Print questions to console
-    print(f"Questions for {dyslexia_type}: {questions}")
     
     if request.method == "POST":
         # Process the evaluation results
@@ -604,19 +605,47 @@ def evaluation_test(request, dyslexia_type):
         score = 0
         total_questions = len(questions)
         
-        # Collect responses and calculate preliminary score
+        # Collect responses and calculate score
         for question in questions:
             q_id = question['id']
-            response = request.POST.get(f'q{q_id}')
+            response = request.POST.get(f'q{q_id}', '').strip().lower()
             responses[q_id] = response
             
-            # Basic scoring logic
+            # Enhanced scoring logic
             if response and question.get('expected'):
-                if isinstance(question['expected'], list):
-                    if response.lower() in [str(x).lower() for x in question['expected']]:
+                expected = question['expected']
+                
+                # Handle different question types
+                if question['interaction'] in ['rapid_picture_naming', 'color_naming']:
+                    # For timed exercises, check if they attempted it
+                    if response and response != 'no_response':
                         score += 1
+                
+                elif question['id'] == 4 and dyslexia_type == "Rapid naming deficit":
+                    # "Count from 1 to 10" - check if they said most numbers
+                    numbers = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+                    said_numbers = [num for num in numbers if num in response]
+                    if len(said_numbers) >= 8:  # At least 8 out of 10 numbers
+                        score += 1
+                
+                elif question['id'] == 2 and dyslexia_type == "Rapid naming deficit":
+                    # "Days of the week" - check if they said most days
+                    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+                    said_days = [day for day in days if day in response]
+                    if len(said_days) >= 5:  # At least 5 out of 7 days
+                        score += 1
+                
+                elif isinstance(expected, list):
+                    # Check if response matches any expected value
+                    if any(exp.lower() in response or response in exp.lower() for exp in expected):
+                        score += 1
+                
                 else:
-                    if response.lower() == str(question['expected']).lower():
+                    # Exact match or contains check for speech responses
+                    expected_str = str(expected).lower()
+                    if (response == expected_str or 
+                        expected_str in response or 
+                        response in expected_str):
                         score += 1
         
         # Store evaluation data
@@ -652,6 +681,7 @@ def evaluation_test(request, dyslexia_type):
         "questions": questions,
     }
     return render(request, "evaluation/static_evaluation.html", context)
+
 
 # Speech recognition API endpoint
 @login_required

@@ -11,130 +11,114 @@
   <form method="POST" class="space-y-6" id="evaluationForm">
     {% csrf_token %}
 
-<!-- Update the template to handle all interaction types properly -->
-{% for question in questions %}
-<div class="p-4 bg-violet-50 rounded-xl shadow-sm question-container" 
-     data-question-type="{{ question.interaction }}"
-     data-question-id="{{ question.id }}"
-     data-metrics="{{ question.metrics|join:',' }}">
-  
-  <p class="font-medium text-gray-800 mb-2">{{ forloop.counter }}. {{ question.text }}</p>
-  
-  {% if question.hint %}
-  <p class="text-sm text-violet-600 mb-3 italic">{{ question.hint }}</p>
-  {% endif %}
-
-  <!-- Speech-based Interactions (for Gemma audio analysis) -->
-  {% if "recognition" in question.interaction or "naming" in question.interaction or "phoneme" in question.interaction or "rhyme" in question.interaction or "sound" in question.interaction %}
-  <div class="speech-interaction">
-    <div class="flex items-center space-x-3">
-      <button type="button" class="record-btn px-3 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition text-sm">
-        🎤 Start Recording
-      </button>
-      <span class="recording-status text-gray-600 text-sm">Click to record your answer</span>
-    </div>
-    <div class="mt-2 hidden" id="result-{{ question.id }}">
-      <p class="text-sm">You said: <span class="font-medium text-violet-700" id="transcript-{{ question.id }}"></span></p>
-      <input type="hidden" name="q{{ question.id }}" id="input-{{ question.id }}">
-    </div>
-  </div>
-
-  <!-- Visual/Tracking Interactions (for Gemma visual pattern analysis) -->
-  {% elif "visual" in question.interaction or "tracking" in question.interaction or "orientation" in question.interaction %}
-  <div class="visual-interaction text-center">
-    {% if question.interaction == "visual_tracking" %}
-    <div class="border border-violet-200 p-4 rounded-lg mb-3 bg-white" id="tracking-area-{{ question.id }}">
-      <p class="text-2xl font-mono text-gray-800 tracking-wider">elephant</p>
-    </div>
-    <p class="text-sm text-gray-600">Trace the word with your mouse or finger</p>
-    <input type="hidden" name="q{{ question.id }}" value="tracking_data" id="visual-input-{{ question.id }}">
-    
-    {% else %}
-    <!-- Visual choice questions -->
-    <div class="space-y-2">
-      {% if question.interaction == "letter_orientation" %}
-      <label class="flex items-center p-2 rounded-lg hover:bg-violet-100 cursor-pointer transition">
-        <input type="radio" name="q{{ question.id }}" value="left" class="mr-2"> Left
-      </label>
-      <label class="flex items-center p-2 rounded-lg hover:bg-violet-100 cursor-pointer transition">
-        <input type="radio" name="q{{ question.id }}" value="right" class="mr-2"> Right
-      </label>
-      {% elif question.interaction == "word_reversal" %}
-      <label class="flex items-center p-2 rounded-lg hover:bg-violet-100 cursor-pointer transition">
-        <input type="radio" name="q{{ question.id }}" value="same" class="mr-2"> Same
-      </label>
-      <label class="flex items-center p-2 rounded-lg hover:bg-violet-100 cursor-pointer transition">
-        <input type="radio" name="q{{ question.id }}" value="different" class="mr-2"> Different
-      </label>
+    {% for question in questions %}
+    <div class="p-4 bg-violet-50 rounded-xl shadow-sm question-container" 
+         data-question-id="{{ question.id }}"
+         data-interaction="{{ question.interaction }}"
+         {% if "speech" in question.interaction or question.timed %}
+         data-tts-text="{{ question.text }}"
+         {% endif %}
+         {% if question.timed %}
+         data-time-limit="{{ question.time_limit }}"
+         {% endif %}>
+      
+      <p class="font-medium text-gray-800 mb-2">{{ forloop.counter }}. {{ question.text }}</p>
+      
+      {% if question.hint %}
+      <p class="text-sm text-violet-600 mb-3 italic">{{ question.hint }}</p>
       {% endif %}
-    </div>
-    {% endif %}
-  </div>
 
-  <!-- Timed/Performance Interactions (for Gemma speed/accuracy analysis) -->
-  {% elif question.timed or "rapid" in question.interaction %}
-  <div class="timed-interaction">
-    <div class="flex justify-between items-center mb-3 p-2 bg-white rounded-lg">
-      <span class="font-medium text-sm">Time limit: {{ question.time_limit }} seconds</span>
-      <span class="timer text-violet-600 font-bold" data-time-limit="{{ question.time_limit }}">{{ question.time_limit }}</span>
-    </div>
-    
-    <div class="flex space-x-4 mb-3 justify-center">
-      {% if question.interaction == "rapid_picture_naming" %}
-      <div class="text-3xl">🐱 🚗 🌞 🏀</div>
-      {% elif question.interaction == "color_naming" %}
-      <div class="space-x-2">
-        <span class="px-3 py-1 bg-red-500 text-white rounded text-sm">RED</span>
-        <span class="px-3 py-1 bg-blue-500 text-white rounded text-sm">BLUE</span>
-        <span class="px-3 py-1 bg-green-500 text-white rounded text-sm">GREEN</span>
-        <span class="px-3 py-1 bg-yellow-500 text-white rounded text-sm">YELLOW</span>
+      <!-- Speech Recognition Questions -->
+      {% if question.interaction == "speech_recognition" %}
+      <div class="flex items-center space-x-3 mb-3">
+        <button type="button" class="tts-btn px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">🔊 Hear Question</button>
+        <button type="button" class="record-btn px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition">🎤 Record Answer</button>
+        <span class="recording-status text-gray-600 text-sm">Click record to speak</span>
+      </div>
+      <div class="mt-2 hidden" id="result-{{ question.id }}">
+        <p class="text-sm">You said: <span class="font-medium text-violet-700" id="transcript-{{ question.id }}"></span></p>
+        <input type="hidden" name="q{{ question.id }}" id="input-{{ question.id }}">
       </div>
       {% endif %}
+
+      <!-- Multiple Choice Questions -->
+      {% if question.interaction == "multiple_choice" %}
+      <div class="space-y-2">
+        {% for option in question.options %}
+        <label class="flex items-center p-2 rounded-lg hover:bg-violet-100 cursor-pointer transition">
+          <input type="radio" name="q{{ question.id }}" value="{{ option }}" class="mr-2" required> 
+          {{ option }}
+        </label>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Visual Exercises -->
+      {% if question.id == 3 and dyslexia_type == "Visual dyslexia" %}
+      <div class="mb-4 p-4 bg-white rounded-lg text-center text-lg font-mono">
+        circle circle square triangle
+      </div>
+      {% endif %}
+
+      <!-- Timed Exercises -->
+      {% if question.timed %}
+      <div class="flex justify-between items-center mb-3 p-2 bg-white rounded-lg">
+        <span class="font-medium text-sm">Time limit: {{ question.time_limit }} seconds</span>
+        <span class="timer text-violet-600 font-bold" data-time-limit="{{ question.time_limit }}">{{ question.time_limit }}</span>
+      </div>
+      
+      <!-- Visual aids for timed exercises -->
+      {% if question.id == 1 and dyslexia_type == "Rapid naming deficit" %}
+      <div class="mb-4 p-4 bg-white rounded-lg">
+        <div class="flex justify-center space-x-6 text-lg font-semibold">
+          <span class="text-red-600">RED</span>
+          <span class="text-yellow-600">YELLOW</span>
+          <span class="text-blue-600">BLUE</span>
+          <span class="text-green-600">GREEN</span>
+        </div>
+        <p class="text-center text-sm text-gray-600 mt-2">Say these color names in order</p>
+      </div>
+      {% endif %}
+      
+      {% if question.id == 3 and dyslexia_type == "Rapid naming deficit" %}
+      <div class="mb-4 p-4 bg-white rounded-lg">
+        <div class="flex justify-center space-x-6 text-lg font-semibold">
+          <span>STAR</span>
+          <span>HEART</span>
+          <span>DIAMOND</span>
+          <span>CLUB</span>
+        </div>
+        <p class="text-center text-sm text-gray-600 mt-2">Say these shape names in order</p>
+      </div>
+      {% endif %}
+      
+      {% if question.id == 5 and dyslexia_type == "Rapid naming deficit" %}
+      <div class="mb-4 p-4 bg-white rounded-lg">
+        <div class="flex justify-center space-x-6 text-lg font-semibold">
+          <span>DOG</span>
+          <span>CAT</span>
+          <span>MOUSE</span>
+          <span>RABBIT</span>
+        </div>
+        <p class="text-center text-sm text-gray-600 mt-2">Say these animal names in order</p>
+      </div>
+      {% endif %}
+      
+      <button type="button" class="start-timing px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition w-full">
+        Start Timed Exercise
+      </button>
+      <div class="record-section mt-3 hidden">
+        <button type="button" class="record-timed-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+          🎤 Start Recording
+        </button>
+        <span class="recording-status-timed text-gray-600 text-sm ml-3">Click to record your answer</span>
+      </div>
+      <input type="hidden" name="q{{ question.id }}" id="timed-input-{{ question.id }}">
+      {% endif %}
+
     </div>
-    
-    <button type="button" class="start-timing px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition w-full">
-      Start Exercise
-    </button>
-    <input type="hidden" name="q{{ question.id }}" id="timed-input-{{ question.id }}">
-  </div>
+    {% endfor %}
 
-  <!-- Cognitive/Decision Interactions (for Gemma reasoning analysis) -->
-  {% elif "recognition" in question.interaction or "authenticity" in question.interaction or "understanding" in question.interaction %}
-  <div class="space-y-2">
-    {% if question.interaction == "spelling_recognition" %}
-    <label class="flex items-center p-2 rounded-lg hover:bg-violet-100 cursor-pointer transition">
-      <input type="radio" name="q{{ question.id }}" value="friend" class="mr-2"> friend
-    </label>
-    <label class="flex items-center p-2 rounded-lg hover:bg-violet-100 cursor-pointer transition">
-      <input type="radio" name="q{{ question.id }}" value="frend" class="mr-2"> frend
-    </label>
-    {% elif question.interaction == "word_authenticity" %}
-    <label class="flex items-center p-2 rounded-lg hover:bg-violet-100 cursor-pointer transition">
-      <input type="radio" name="q{{ question.id }}" value="knight" class="mr-2"> knight
-    </label>
-    <label class="flex items-center p-2 rounded-lg hover:bg-violet-100 cursor-pointer transition">
-      <input type="radio" name="q{{ question.id }}" value="nite" class="mr-2"> nite
-    </label>
-    {% elif question.interaction == "context_understanding" %}
-    <label class="flex items-center p-2 rounded-lg hover:bg-violet-100 cursor-pointer transition">
-      <input type="radio" name="q{{ question.id }}" value="yes" class="mr-2"> Yes, it makes sense
-    </label>
-    <label class="flex items-center p-2 rounded-lg hover:bg-violet-100 cursor-pointer transition">
-      <input type="radio" name="q{{ question.id }}" value="no" class="mr-2"> No, it doesn't make sense
-    </label>
-    {% endif %}
-  </div>
-
-  <!-- Fallback for unimplemented interactions -->
-  {% else %}
-  <div class="space-y-2">
-    <p class="text-sm text-orange-600">Specialized interaction for analysis</p>
-    <textarea name="q{{ question.id }}" class="w-full p-2 border rounded" 
-              placeholder="Your response will be analyzed by our AI..."></textarea>
-  </div>
-  {% endif %}
-</div>
-{% endfor %}
     <!-- Submit Button -->
     <div class="text-center mt-8">
       <button type="submit"
@@ -145,62 +129,84 @@
   </form>
 </div>
 
-<!-- Speech Recognition Script -->
+<!-- Speech & TTS JS (same as before) -->
 <script>
-// Speech recognition functionality
-class SpeechRecognitionHelper {
+class SpeechHelper {
     constructor() {
         this.recognition = null;
         this.isRecording = false;
         this.currentQuestionId = null;
-        
+        this.timedResponse = "";
+
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             this.recognition = new SpeechRecognition();
             this.recognition.continuous = false;
             this.recognition.interimResults = false;
             this.recognition.lang = 'en-US';
-            
+
             this.recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
                 this.handleRecognitionResult(transcript);
             };
-            
+
             this.recognition.onerror = (event) => {
                 console.error('Speech recognition error:', event.error);
                 this.updateStatus('Error: ' + event.error, 'error');
             };
+
+            this.recognition.onend = () => {
+                this.isRecording = false;
+            };
         }
     }
-    
-    startRecording(questionId) {
+
+    startRecording(questionId, isTimed = false) {
         if (!this.recognition) {
-            alert('Speech recognition not supported in your browser. Please use Chrome or Edge.');
+            alert('Speech recognition not supported in your browser. Use Chrome or Edge.');
             return;
+        }
+        
+        if (this.isRecording) {
+            this.recognition.stop();
         }
         
         this.currentQuestionId = questionId;
         this.isRecording = true;
-        this.updateStatus('Recording... Speak now!', 'recording');
         
-        try {
-            this.recognition.start();
-        } catch (error) {
+        if (isTimed) {
+            this.updateTimedStatus('Recording... Speak now!', 'recording');
+        } else {
+            this.updateStatus('Recording... Speak now!', 'recording');
+        }
+
+        try { 
+            this.recognition.start(); 
+        } catch (error) { 
             console.error('Recognition start error:', error);
+            this.isRecording = false;
         }
     }
-    
+
     handleRecognitionResult(transcript) {
         if (this.currentQuestionId) {
-            document.getElementById(`transcript-${this.currentQuestionId}`).textContent = transcript;
-            document.getElementById(`input-${this.currentQuestionId}`).value = transcript;
-            document.getElementById(`result-${this.currentQuestionId}`).classList.remove('hidden');
+            const container = document.querySelector(`[data-question-id="${this.currentQuestionId}"]`);
+            const isTimed = container.querySelector('.start-timing') && container.querySelector('.start-timing').disabled;
+            
+            if (isTimed) {
+                this.timedResponse = transcript;
+                document.getElementById(`timed-input-${this.currentQuestionId}`).value = transcript;
+                this.updateTimedStatus('Recording complete!', 'complete');
+            } else {
+                document.getElementById(`transcript-${this.currentQuestionId}`).textContent = transcript;
+                document.getElementById(`input-${this.currentQuestionId}`).value = transcript;
+                document.getElementById(`result-${this.currentQuestionId}`).classList.remove('hidden');
+                this.updateStatus('Recording complete!', 'complete');
+            }
         }
-        
         this.isRecording = false;
-        this.updateStatus('Recording complete!', 'complete');
     }
-    
+
     updateStatus(message, type) {
         if (this.currentQuestionId) {
             const statusElement = document.querySelector(`[data-question-id="${this.currentQuestionId}"] .recording-status`);
@@ -214,54 +220,134 @@ class SpeechRecognitionHelper {
             }
         }
     }
+
+    updateTimedStatus(message, type) {
+        if (this.currentQuestionId) {
+            const statusElement = document.querySelector(`[data-question-id="${this.currentQuestionId}"] .recording-status-timed`);
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.className = `recording-status-timed text-sm ${
+                    type === 'recording' ? 'text-red-600 font-medium' : 
+                    type === 'complete' ? 'text-green-600 font-medium' : 
+                    type === 'error' ? 'text-red-600 font-medium' : 'text-gray-600'
+                }`;
+            }
+        }
+    }
+
+    playTTS(text) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            speechSynthesis.speak(utterance);
+        }
+    }
 }
 
-// Initialize speech recognition
-const speechHelper = new SpeechRecognitionHelper();
+const speechHelper = new SpeechHelper();
 
-// Add event listeners when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Speech recording buttons
-    document.querySelectorAll('.record-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const questionId = this.closest('.question-container').dataset.questionId;
+document.addEventListener('DOMContentLoaded', () => {
+    // TTS buttons
+    document.querySelectorAll('.tts-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const container = btn.closest('.question-container');
+            const text = container.dataset.ttsText;
+            speechHelper.playTTS(text);
+        });
+    });
+
+    // Record buttons for regular speech questions
+    document.querySelectorAll('.record-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const questionId = btn.closest('.question-container').dataset.questionId;
             speechHelper.startRecording(questionId);
         });
     });
-    
+
+    // Record buttons for timed exercises
+    document.querySelectorAll('.record-timed-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const questionId = btn.closest('.question-container').dataset.questionId;
+            speechHelper.startRecording(questionId, true);
+        });
+    });
+
     // Timed exercises
     document.querySelectorAll('.start-timing').forEach(button => {
         button.addEventListener('click', function() {
-            const container = this.closest('.timed-interaction');
+            const container = this.closest('.question-container');
             const timerElement = container.querySelector('.timer');
-            const timeLimit = parseInt(timerElement.dataset.timeLimit);
-            const questionId = this.closest('.question-container').dataset.questionId;
-            
-            this.disabled = true;
-            this.textContent = 'Naming...';
-            this.classList.add('bg-orange-500');
-            
+            const timeLimit = parseInt(container.dataset.timeLimit);
+            const questionId = container.dataset.questionId;
+            const recordSection = container.querySelector('.record-section');
+
+            button.disabled = true;
+            button.textContent = 'Exercise Started...';
+            button.classList.add('bg-orange-500');
+            recordSection.classList.remove('hidden');
+
             let timeLeft = timeLimit;
             const countdown = setInterval(() => {
                 timeLeft--;
                 timerElement.textContent = timeLeft;
-                timerElement.classList.toggle('text-red-600', timeLeft <= 3);
+                
+                if (timeLeft <= 3) {
+                    timerElement.classList.add('text-red-600', 'animate-pulse');
+                }
                 
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
-                    this.textContent = 'Completed!';
-                    this.classList.remove('bg-orange-500');
-                    this.classList.add('bg-green-500');
-                    document.getElementById(`timed-input-${questionId}`).value = 'completed';
+                    button.textContent = 'Time\'s Up!';
+                    button.classList.remove('bg-orange-500');
+                    button.classList.add('bg-red-500');
+                    recordSection.classList.add('hidden');
+                    
+                    // Auto-submit if no response recorded
+                    if (!document.getElementById(`timed-input-${questionId}`).value) {
+                        document.getElementById(`timed-input-${questionId}`).value = 'no_response';
+                    }
                 }
             }, 1000);
         });
+    });
+
+    // Form validation
+    document.getElementById('evaluationForm').addEventListener('submit', function(e) {
+        let allAnswered = true;
+        const questions = document.querySelectorAll('.question-container');
+        
+        questions.forEach(container => {
+            const questionId = container.dataset.questionId;
+            const interaction = container.dataset.interaction;
+            let answered = false;
+            
+            if (interaction === 'multiple_choice') {
+                answered = container.querySelector(`input[name="q${questionId}"]:checked`);
+            } else {
+                const input = document.getElementById(`input-${questionId}`) || 
+                             document.getElementById(`timed-input-${questionId}`);
+                answered = input && input.value && input.value !== 'no_response';
+            }
+            
+            if (!answered) {
+                allAnswered = false;
+                container.classList.add('border-2', 'border-red-500');
+            } else {
+                container.classList.remove('border-2', 'border-red-500');
+            }
+        });
+        
+        if (!allAnswered) {
+            e.preventDefault();
+            alert('Please answer all questions before submitting.');
+        }
     });
 });
 </script>
 
 <style>
-.recording-status.recording {
+.recording-status.recording, .recording-status-timed.recording {
     animation: pulse 1s infinite;
 }
 
@@ -271,7 +357,6 @@ document.addEventListener('DOMContentLoaded', function() {
     100% { opacity: 1; }
 }
 
-/* Maintain your original violet color scheme */
 .bg-violet-50 { background-color: #f5f3ff; }
 .bg-violet-100 { background-color: #ede9fe; }
 .bg-violet-600 { background-color: #7c3aed; }
