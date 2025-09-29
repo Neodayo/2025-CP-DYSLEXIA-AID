@@ -6,9 +6,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <title>{{ title }}</title>
 
-  <!-- Fonts + Lucide -->
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
 
   <style>
     body {
@@ -55,30 +57,61 @@
     a:focus, button:focus {
       outline: 2px solid #7c3aed;
       outline-offset: 2px;
+    }
+
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .transform {
+      transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+    }
+
+    .sidebar {
+      transition: transform 0.3s ease;
+      width: 280px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 30;
+      overflow-y: auto;
+    }
+
+    .content-area {
+      margin-left: 280px;
+      min-height: 100vh;
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
       
-      .glass-effect {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-  transform: translateY(-2px);
-}
-
-.transform {
-  transition: transform 0.5s ease-out, opacity 0.5s ease-out;
-}
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .content-area {
+        margin-left: 0 !important;
+        width: 100%;
+      }
     }
   </style>
 </head>
-<body class="min-h-screen gradient-bg text-gray-800 relative overflow-hidden">
+<body class="min-h-screen gradient-bg text-gray-800 relative overflow-x-hidden">
 
   <!-- Floating particles background -->
   <div class="absolute inset-0 overflow-hidden">
@@ -88,23 +121,146 @@
   </div>
 
   <!-- Mobile Menu Button -->
-  <div class="md:hidden fixed top-4 right-4 z-50">
+  <div class="lg:hidden fixed top-4 left-4 z-50">
     <button id="mobile-menu-btn" class="bg-white p-3 rounded-xl text-violet-900 hover:bg-violet-50 transition shadow-md">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-      </svg>
+      <i class="bi bi-list text-xl"></i>
     </button>
   </div>
 
-  <!-- Mobile Menu Overlay -->
-  <div id="mobile-menu" class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 hidden">
-    <div class="fixed top-0 right-0 h-full w-80 bg-white p-6 transform translate-x-full transition-transform duration-300 shadow-xl" id="mobile-menu-panel">
+  <!-- Sidebar Navigation -->
+  <div class="sidebar bg-white shadow-2xl">
+    <!-- Logo and Title -->
+    <div class="p-6 border-b border-violet-100">
+      <h1 class="text-xl font-bold text-violet-900">Dyslexia Learning Aid</h1>
+    </div>
+    
+    <!-- User Info -->
+    <div class="p-4 border-b border-violet-100">
+      <div class="flex items-center space-x-3 mb-3">
+        <div class="w-10 h-10 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+          <i class="bi bi-person-fill"></i>
+        </div>
+        <div>
+          <p class="font-semibold text-violet-900">{{ child_profile.child.username }}</p>
+          <p class="text-xs text-violet-600">{{ child_profile.child.get_role_display }}</p>
+        </div>
+      </div>
+      
+      <!-- Dyslexia Type -->
+      <div class="bg-violet-50 p-3 rounded-lg">
+        <p class="text-xs font-medium text-violet-700">Dyslexia Type:</p>
+        <p class="text-sm font-semibold text-violet-900">{{ assigned_type }}</p>
+        {% if suggested_type %}
+          <p class="text-xs text-violet-600 mt-1">Suggested: {{ suggested_type }}</p>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Navigation Links -->
+    <nav class="p-4 space-y-2 flex-1">
+      <a href="{% url 'child_home' child_profile.child.id %}" 
+         class="flex items-center space-x-3 px-4 py-3 rounded-xl font-semibold transition
+         {% if request.resolver_match.url_name == 'child_home' %}
+           bg-violet-100 text-violet-900
+         {% else %}
+           text-violet-900 hover:bg-violet-50
+         {% endif %}">
+        <i class="bi bi-house-door text-xl"></i>
+        <span>Home</span>
+      </a>
+      <a href="{% url 'child_modules' child_profile.child.id %}" 
+         class="flex items-center space-x-3 px-4 py-3 rounded-xl font-semibold transition
+         {% if request.resolver_match.url_name == 'child_modules' %}
+           bg-violet-100 text-violet-900
+         {% else %}
+           text-violet-900 hover:bg-violet-50
+         {% endif %}">
+        <i class="bi bi-journal-text text-xl"></i>
+        <span>Modules</span>
+      </a>
+      <a href="{% url 'child_profile' child_profile.child.id %}" 
+         class="flex items-center space-x-3 px-4 py-3 rounded-xl font-semibold transition
+         {% if request.resolver_match.url_name == 'child_profile' %}
+           bg-violet-100 text-violet-900
+         {% else %}
+           text-violet-900 hover:bg-violet-50
+         {% endif %}">
+        <i class="bi bi-person-circle text-xl"></i>
+        <span>Profile</span>
+      </a>
+      <a href="{% url 'child_progress' child_profile.child.id %}" 
+         class="flex items-center space-x-3 px-4 py-3 rounded-xl font-semibold transition
+         {% if request.resolver_match.url_name == 'child_progress' %}
+           bg-violet-100 text-violet-900
+         {% else %}
+           text-violet-900 hover:bg-violet-50
+         {% endif %}">
+        <i class="bi bi-graph-up text-xl"></i>
+        <span>Progress</span>
+      </a>
+    </nav>
+    
+    <!-- Logout Button -->
+    <div class="p-4 border-t border-violet-100 mt-auto">
+      <a href="{% url 'logout' %}" 
+         class="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 font-semibold hover:bg-red-50 transition">
+        <i class="bi bi-box-arrow-right text-xl"></i>
+        <span>Logout</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="content-area">
+    <!-- Mobile Header -->
+    <div class="lg:hidden bg-white shadow-2xl rounded-3xl mx-4 mt-4 p-4 animate-fadeIn">
+      <h1 class="text-lg font-bold text-violet-900 text-center">Dyslexia Learning Aid</h1>
+    </div>
+
+    <!-- Main Content -->
+    <div class="p-4 lg:p-6">
+      <div class="max-w-6xl mx-auto">
+        <div class="bg-white shadow-2xl rounded-3xl p-4 sm:p-6 lg:p-8 mt-4 lg:mt-6 animate-fadeIn" style="animation-delay: 0.2s;">
+          {% block content %}
+            <!-- User Info -->
+            <div class="mb-4 p-3 bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg border border-violet-200">
+              <p class="text-sm font-medium text-violet-800">
+                <i class="bi bi-person me-2"></i><span class="font-semibold">Current User:</span> {{ child_profile.child.username }}
+              </p>
+              <p class="text-sm font-medium text-violet-700">
+                <i class="bi bi-bullseye me-2"></i><span class="font-semibold">Role:</span> {{ child_profile.child.get_role_display }}
+              </p>
+              {% if child_profile.child.role == "CHILD" and child_profile.parent %}
+                <p class="text-sm font-medium text-violet-600">
+                  <i class="bi bi-people me-2"></i><span class="font-semibold">Parent:</span> {{ child_profile.parent.username }}
+                </p>
+              {% endif %}
+            </div>
+
+            <!-- Dyslexia Type Info -->
+            <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+              <h2 class="text-xl font-bold text-violet-900 mb-2">
+                <i class="bi bi-clipboard-data me-2"></i>Dyslexia Type (Registered): {{ assigned_type }}
+              </h2>
+              {% if suggested_type %}
+                <p class="text-sm text-gray-700">
+                  <i class="bi bi-lightbulb me-2"></i><span class="font-semibold">System Suggests:</span> {{ suggested_type }}
+                </p>
+              {% endif %}
+            </div>
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Overlay (for smaller screens) -->
+  <div id="mobile-menu" class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 hidden">
+    <div class="fixed top-0 left-0 h-full w-80 bg-white p-6 transform -translate-x-full transition-transform duration-300 shadow-xl" id="mobile-menu-panel">
       <div class="flex justify-between items-center mb-8">
         <h2 class="text-xl font-bold text-violet-900">Menu</h2>
         <button id="close-menu" class="text-violet-900 hover:bg-violet-50 p-2 rounded-lg transition">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
+          <i class="bi bi-x-lg text-xl"></i>
         </button>
       </div>
       <nav class="space-y-4">
@@ -115,7 +271,7 @@
            {% else %}
              text-violet-900 hover:bg-violet-50
            {% endif %}">
-          <span class="text-xl">🏠</span>
+          <i class="bi bi-house-door text-xl"></i>
           <span>Home</span>
         </a>
         <a href="{% url 'child_modules' child_profile.child.id %}" 
@@ -125,7 +281,7 @@
            {% else %}
              text-violet-900 hover:bg-violet-50
            {% endif %}">
-          <span class="text-xl">📘</span>
+          <i class="bi bi-journal-text text-xl"></i>
           <span>Modules</span>
         </a>
         <a href="{% url 'child_profile' child_profile.child.id %}" 
@@ -135,7 +291,7 @@
            {% else %}
              text-violet-900 hover:bg-violet-50
            {% endif %}">
-          <span class="text-xl">👤</span>
+          <i class="bi bi-person-circle text-xl"></i>
           <span>Profile</span>
         </a>
         <a href="{% url 'child_progress' child_profile.child.id %}" 
@@ -145,108 +301,17 @@
            {% else %}
              text-violet-900 hover:bg-violet-50
            {% endif %}">
-          <span class="text-xl">📊</span>
+          <i class="bi bi-graph-up text-xl"></i>
           <span>Progress</span>
         </a>
         <a href="{% url 'logout' %}" 
            class="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 font-semibold hover:bg-red-50 transition block">
-          <span class="text-xl">🚪</span>
+          <i class="bi bi-box-arrow-right text-xl"></i>
           <span>Logout</span>
         </a>
       </nav>
     </div>
   </div>
-
-  <!-- Desktop Navbar -->
-  <div class="hidden md:block bg-white shadow-2xl rounded-3xl mx-4 lg:mx-6 mt-4 lg:mt-6 p-4 lg:p-6 animate-fadeIn relative z-10">
-    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
-      <h1 class="text-xl lg:text-2xl font-bold text-violet-900">Dyslexia Learning Aid</h1>
-      <nav class="flex flex-wrap items-center gap-2 lg:gap-4">
-        <a href="{% url 'child_home' child_profile.child.id %}" 
-           class="px-3 lg:px-4 py-2 rounded-xl font-semibold transition text-sm lg:text-base
-           {% if request.resolver_match.url_name == 'child_home' %}
-             bg-violet-100 text-violet-900
-           {% else %}
-             text-violet-900 hover:bg-violet-50
-           {% endif %}">
-          🏠 Home
-        </a>
-        <a href="{% url 'child_modules' child_profile.child.id %}" 
-           class="px-3 lg:px-4 py-2 rounded-xl font-semibold transition text-sm lg:text-base
-           {% if request.resolver_match.url_name == 'child_modules' %}
-             bg-violet-100 text-violet-900
-           {% else %}
-             text-violet-900 hover:bg-violet-50
-           {% endif %}">
-          📘 Modules
-        </a>
-        <a href="{% url 'child_profile' child_profile.child.id %}" 
-           class="px-3 lg:px-4 py-2 rounded-xl font-semibold transition text-sm lg:text-base
-           {% if request.resolver_match.url_name == 'child_profile' %}
-             bg-violet-100 text-violet-900
-           {% else %}
-             text-violet-900 hover:bg-violet-50
-           {% endif %}">
-          👤 Profile
-        </a>
-        <a href="{% url 'child_progress' child_profile.child.id %}" 
-           class="px-3 lg:px-4 py-2 rounded-xl font-semibold transition text-sm lg:text-base
-           {% if request.resolver_match.url_name == 'child_progress' %}
-             bg-violet-100 text-violet-900
-           {% else %}
-             text-violet-900 hover:bg-violet-50
-           {% endif %}">
-          📊 Progress
-        </a>
-        
-        <a href="{% url 'logout' %}" 
-           class="bg-white px-4 lg:px-6 py-2 rounded-xl text-red-600 font-semibold hover:bg-red-50 transition text-sm lg:text-base shadow-sm">
-          🚪 Logout
-        </a>
-      </nav>
-    </div>
-  </div>
-
-  <!-- Mobile Header -->
-  <div class="md:hidden bg-white shadow-2xl rounded-3xl mx-4 mt-4 p-4 animate-fadeIn relative z-10">
-    <h1 class="text-lg font-bold text-violet-900 text-center pr-12">Dyslexia Learning Aid</h1>
-  </div>
-
-
- <!-- Main Content -->
-<div class="relative z-10 max-w-5xl mx-auto p-4 lg:p-6">
-    <div class="bg-white shadow-2xl rounded-3xl p-4 sm:p-6 lg:p-8 mt-4 lg:mt-6 animate-fadeIn" style="animation-delay: 0.2s;">
-      {% block content %}
-        <!-- User Info -->
-        <div class="mb-4 p-3 bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg border border-violet-200">
-          <p class="text-sm font-medium text-violet-800">
-            👤 <span class="font-semibold">Current User:</span> {{ child_profile.child.username }}
-          </p>
-          <p class="text-sm font-medium text-violet-700">
-            🎯 <span class="font-semibold">Role:</span> {{ child_profile.child.get_role_display }}
-          </p>
-          {% if child_profile.child.role == "CHILD" and child_profile.parent %}
-            <p class="text-sm font-medium text-violet-600">
-              👨‍👩‍👧‍👦 <span class="font-semibold">Parent:</span> {{ child_profile.parent.username }}
-            </p>
-          {% endif %}
-        </div>
-
-        <!-- Dyslexia Type Info -->
-        <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-          <h2 class="text-xl font-bold text-violet-900 mb-2">
-            Dyslexia Type (Registered): {{ assigned_type }}
-          </h2>
-          {% if suggested_type %}
-            <p class="text-sm text-gray-700">
-              💡 <span class="font-semibold">System Suggests:</span> {{ suggested_type }}
-            </p>
-          {% endif %}
-        </div>
-      {% endblock %}
-    </div>
-</div>
-  
 
 {% if evaluation_completed %}
 <!-- Evaluation Completion Modal -->
@@ -257,12 +322,12 @@
     
     <!-- Close Button -->
     <button id="closeEvaluationModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
-      <i data-lucide="x" class="w-6 h-6"></i>
+      <i class="bi bi-x-lg"></i>
     </button>
 
     <!-- Success Icon -->
     <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-      <i data-lucide="check" class="w-10 h-10 text-white"></i>
+      <i class="bi bi-check-lg text-white text-3xl"></i>
     </div>
     
     <!-- Header -->
@@ -285,7 +350,7 @@
     <!-- Button -->
     <button id="startLearningBtn" 
             class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300">
-      <i data-lucide="book-open" class="w-5 h-5"></i>
+      <i class="bi bi-journal-text"></i>
       <span>Start Learning</span>
     </button>
     
@@ -293,15 +358,15 @@
     <div class="mt-6 pt-6 border-t border-gray-200">
       <div class="flex justify-center space-x-6 text-xs text-gray-500">
         <div class="flex items-center space-x-1">
-          <i data-lucide="brain" class="w-4 h-4 text-purple-500"></i>
+          <i class="bi bi-cpu text-purple-500"></i>
           <span>AI-Powered</span>
         </div>
         <div class="flex items-center space-x-1">
-          <i data-lucide="heart" class="w-4 h-4 text-pink-500"></i>
+          <i class="bi bi-heart text-pink-500"></i>
           <span>Personalized</span>
         </div>
         <div class="flex items-center space-x-1">
-          <i data-lucide="star" class="w-4 h-4 text-yellow-500"></i>
+          <i class="bi bi-star text-yellow-500"></i>
           <span>Adaptive</span>
         </div>
       </div>
@@ -326,7 +391,6 @@
           modalBox.classList.remove("opacity-0", "translate-y-10");
           modalBox.classList.add("opacity-100", "translate-y-0");
         }, 50);
-        lucide.createIcons();
       }, 300);
     }
 
@@ -370,6 +434,7 @@
       const mobileMenu = document.getElementById('mobile-menu');
       const mobileMenuPanel = document.getElementById('mobile-menu-panel');
       const closeMenu = document.getElementById('close-menu');
+      const sidebar = document.querySelector('.sidebar');
 
       function openMenu() {
         mobileMenu.classList.remove('hidden');
@@ -387,14 +452,24 @@
         document.body.style.overflow = '';
       }
 
-      mobileMenuBtn.addEventListener('click', openMenu);
-      closeMenu.addEventListener('click', closeMenuFunc);
+      // Toggle sidebar on mobile
+      if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', function() {
+          sidebar.classList.toggle('open');
+        });
+      }
+
+      if (closeMenu) {
+        closeMenu.addEventListener('click', closeMenuFunc);
+      }
       
-      mobileMenu.addEventListener('click', function(e) {
-        if (e.target === mobileMenu) {
-          closeMenuFunc();
-        }
-      });
+      if (mobileMenu) {
+        mobileMenu.addEventListener('click', function(e) {
+          if (e.target === mobileMenu) {
+            closeMenuFunc();
+          }
+        });
+      }
 
       const navLinks = mobileMenuPanel.querySelectorAll('a');
       navLinks.forEach(link => {
@@ -406,8 +481,6 @@
           closeMenuFunc();
         }
       });
-
-      lucide.createIcons();
     });
   </script>
 </body>
