@@ -1,3 +1,4 @@
+<!-- static_evaluation.html - COMPLETE VERSION -->
 {% extends "base.html" %}
 {% block content %}
 <div class="relative z-10 max-w-4xl mx-auto p-6">
@@ -10,6 +11,11 @@
 
   <form method="POST" class="space-y-6" id="evaluationForm">
     {% csrf_token %}
+    
+    <!-- Hidden inputs for data collection -->
+    <input type="hidden" name="tts_usage" id="ttsUsageInput" value="[]">
+    <input type="hidden" name="response_times" id="responseTimesInput" value="{}">
+    <input type="hidden" name="start_time" id="startTimeInput" value="{{ request.session.evaluation_start_time }}">
 
     {% for question in questions %}
     <div class="p-4 bg-violet-50 rounded-xl shadow-sm question-container" 
@@ -31,8 +37,8 @@
       <!-- Speech Recognition Questions -->
       {% if question.interaction == "speech_recognition" %}
       <div class="flex items-center space-x-3 mb-3">
-        <button type="button" class="tts-btn px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">🔊 Hear Question</button>
-        <button type="button" class="record-btn px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition">🎤 Record Answer</button>
+        <button type="button" class="tts-btn px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition" data-question-id="{{ question.id }}">🔊 Hear Question</button>
+        <button type="button" class="record-btn px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition" data-question-id="{{ question.id }}">🎤 Record Answer</button>
         <span class="recording-status text-gray-600 text-sm">Click record to speak</span>
       </div>
       <div class="mt-2 hidden" id="result-{{ question.id }}">
@@ -104,11 +110,11 @@
       </div>
       {% endif %}
       
-      <button type="button" class="start-timing px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition w-full">
+      <button type="button" class="start-timing px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition w-full" data-question-id="{{ question.id }}">
         Start Timed Exercise
       </button>
       <div class="record-section mt-3 hidden">
-        <button type="button" class="record-timed-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+        <button type="button" class="record-timed-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition" data-question-id="{{ question.id }}">
           🎤 Start Recording
         </button>
         <span class="recording-status-timed text-gray-600 text-sm ml-3">Click to record your answer</span>
@@ -129,7 +135,7 @@
   </form>
 </div>
 
-<!-- Speech & TTS JS (same as before) -->
+<!-- Enhanced Speech & Data Collection JS -->
 <script>
 class SpeechHelper {
     constructor() {
@@ -137,6 +143,11 @@ class SpeechHelper {
         this.isRecording = false;
         this.currentQuestionId = null;
         this.timedResponse = "";
+        
+        // NEW: Data collection properties
+        this.ttsUsage = new Set();
+        this.responseTimes = {};
+        this.startTime = Date.now();
 
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -161,7 +172,48 @@ class SpeechHelper {
         }
     }
 
+    // NEW: Track TTS usage
+    trackTTSUsage(questionId) {
+        this.ttsUsage.add(questionId);
+        console.log(`TTS used for question ${questionId}`);
+        this.updateHiddenInputs();
+    }
+
+    // NEW: Track response time for questions
+    startQuestionTimer(questionId) {
+        this.responseTimes[questionId] = Date.now();
+    }
+
+    // NEW: Calculate and store processing time
+    endQuestionTimer(questionId) {
+        if (this.responseTimes[questionId]) {
+            const timeTaken = (Date.now() - this.responseTimes[questionId]) / 1000; // Convert to seconds
+            this.responseTimes[questionId] = timeTaken;
+            this.updateHiddenInputs();
+            return timeTaken;
+        }
+        return 0;
+    }
+
+    // NEW: Update hidden form inputs with collected data
+    updateHiddenInputs() {
+        document.getElementById('ttsUsageInput').value = JSON.stringify(Array.from(this.ttsUsage));
+        document.getElementById('responseTimesInput').value = JSON.stringify(this.responseTimes);
+    }
+
+    // NEW: Get all collected data
+    getCollectedData() {
+        return {
+            tts_usage: Array.from(this.ttsUsage),
+            response_times: this.responseTimes,
+            start_time: this.startTime / 1000,
+            total_time: (Date.now() - this.startTime) / 1000
+        };
+    }
+
     startRecording(questionId, isTimed = false) {
+        this.startQuestionTimer(questionId); // NEW: Start timing when recording begins
+        
         if (!this.recognition) {
             alert('Speech recognition not supported in your browser. Use Chrome or Edge.');
             return;
@@ -189,6 +241,8 @@ class SpeechHelper {
     }
 
     handleRecognitionResult(transcript) {
+        const processingTime = this.endQuestionTimer(this.currentQuestionId); // NEW: Capture processing time
+        
         if (this.currentQuestionId) {
             const container = document.querySelector(`[data-question-id="${this.currentQuestionId}"]`);
             const isTimed = container.querySelector('.start-timing') && container.querySelector('.start-timing').disabled;
@@ -197,11 +251,17 @@ class SpeechHelper {
                 this.timedResponse = transcript;
                 document.getElementById(`timed-input-${this.currentQuestionId}`).value = transcript;
                 this.updateTimedStatus('Recording complete!', 'complete');
+                
+                // NEW: Log STT result with timing
+                console.log(`Timed Q${this.currentQuestionId}: "${transcript}" (${processingTime.toFixed(2)}s)`);
             } else {
                 document.getElementById(`transcript-${this.currentQuestionId}`).textContent = transcript;
                 document.getElementById(`input-${this.currentQuestionId}`).value = transcript;
                 document.getElementById(`result-${this.currentQuestionId}`).classList.remove('hidden');
                 this.updateStatus('Recording complete!', 'complete');
+                
+                // NEW: Log STT result with timing
+                console.log(`Q${this.currentQuestionId}: "${transcript}" (${processingTime.toFixed(2)}s)`);
             }
         }
         this.isRecording = false;
@@ -248,11 +308,15 @@ class SpeechHelper {
 const speechHelper = new SpeechHelper();
 
 document.addEventListener('DOMContentLoaded', () => {
-    // TTS buttons
+    // TTS buttons - ENHANCED with data tracking
     document.querySelectorAll('.tts-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+            const questionId = btn.dataset.questionId;
             const container = btn.closest('.question-container');
             const text = container.dataset.ttsText;
+            
+            // NEW: Track TTS usage
+            speechHelper.trackTTSUsage(questionId);
             speechHelper.playTTS(text);
         });
     });
@@ -260,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Record buttons for regular speech questions
     document.querySelectorAll('.record-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const questionId = btn.closest('.question-container').dataset.questionId;
+            const questionId = btn.dataset.questionId;
             speechHelper.startRecording(questionId);
         });
     });
@@ -268,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Record buttons for timed exercises
     document.querySelectorAll('.record-timed-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const questionId = btn.closest('.question-container').dataset.questionId;
+            const questionId = btn.dataset.questionId;
             speechHelper.startRecording(questionId, true);
         });
     });
@@ -276,10 +340,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Timed exercises
     document.querySelectorAll('.start-timing').forEach(button => {
         button.addEventListener('click', function() {
+            const questionId = this.dataset.questionId;
             const container = this.closest('.question-container');
             const timerElement = container.querySelector('.timer');
             const timeLimit = parseInt(container.dataset.timeLimit);
-            const questionId = container.dataset.questionId;
             const recordSection = container.querySelector('.record-section');
 
             button.disabled = true;
@@ -312,8 +376,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Form validation
+    // ENHANCED Form submission with data collection
     document.getElementById('evaluationForm').addEventListener('submit', function(e) {
+        // Add collected data to form before submission
+        const collectedData = speechHelper.getCollectedData();
+        
+        // Update hidden inputs with final data
+        document.getElementById('ttsUsageInput').value = JSON.stringify(collectedData.tts_usage);
+        document.getElementById('responseTimesInput').value = JSON.stringify(collectedData.response_times);
+        document.getElementById('startTimeInput').value = collectedData.start_time;
+        
+        console.log('Submitting evaluation data:', collectedData);
+        
+        // Validation
         let allAnswered = true;
         const questions = document.querySelectorAll('.question-container');
         
@@ -341,7 +416,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!allAnswered) {
             e.preventDefault();
             alert('Please answer all questions before submitting.');
+        } else {
+            console.log('All questions answered, submitting form...');
         }
+    });
+
+    // NEW: Track multiple choice selections for timing
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const questionId = this.name.replace('q', '');
+            if (!speechHelper.responseTimes[questionId]) {
+                speechHelper.responseTimes[questionId] = (Date.now() - speechHelper.startTime) / 1000;
+                speechHelper.updateHiddenInputs();
+            }
+        });
     });
 });
 </script>

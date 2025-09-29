@@ -1,7 +1,8 @@
+# views.py - ORIGINAL COMMENTS PRESERVED + NEW DATA COLLECTION
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login, logout
-from django.shortcuts import render, redirect,  get_object_or_404
-from django.http import HttpResponseForbidden
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseForbidden, JsonResponse, HttpResponse
 from .forms import ParentRegisterForm, ChildRegisterForm, IndependentRegisterForm, DyslexiaTypeForm, ChildProfileEditForm
 from .forms import DyslexiaTypeForm
 from django.contrib import messages
@@ -15,6 +16,9 @@ import speech_recognition as sr
 import json
 from django.http import JsonResponse
 
+# NEW: Import the EvaluationData model
+from .models import EvaluationData
+import numpy as np  # NEW: For data export functionality
 
 
 
@@ -150,7 +154,7 @@ def login_redirect(request):
         else:
             return redirect("dyslexia_type_selection", child_id=profile.child.id)
 
-    # ❌ Don’t redirect to login again (causes loop)
+    # ❌ Don't redirect to login again (causes loop)
     return HttpResponseForbidden("Unknown role or access denied.")
 
 
@@ -600,10 +604,19 @@ def evaluation_test(request, dyslexia_type):
     questions = questions_bank.get(dyslexia_type, [])
     
     if request.method == "POST":
+        # NEW: Process the collected interaction data
+        tts_usage = json.loads(request.POST.get('tts_usage', '[]'))
+        response_times = json.loads(request.POST.get('response_times', '{}'))
+        start_time = float(request.POST.get('start_time', time.time()))
+        completion_time = time.time() - start_time
+        
         # Process the evaluation results
         responses = {}
         score = 0
         total_questions = len(questions)
+        
+        # NEW: Collect STT response data for ML training
+        stt_responses_data = {}
         
         # Collect responses and calculate score
         for question in questions:
@@ -611,12 +624,21 @@ def evaluation_test(request, dyslexia_type):
             response = request.POST.get(f'q{q_id}', '').strip().lower()
             responses[q_id] = response
             
+            # NEW: Capture detailed STT response data
+            stt_responses_data[str(q_id)] = {
+                'response': response,
+                'expected': question.get('expected', ''),
+                'question_type': question['interaction'],
+                'processing_time': response_times.get(str(q_id), 0),
+                'used_tts': q_id in tts_usage  # Track if TTS was used for this question
+            }
+            
             # Enhanced scoring logic
             if response and question.get('expected'):
                 expected = question['expected']
                 
                 # Handle different question types
-                if question['interaction'] in ['rapid_picture_naming', 'color_naming']:
+                if question.get('timed', False):
                     # For timed exercises, check if they attempted it
                     if response and response != 'no_response':
                         score += 1
@@ -648,15 +670,50 @@ def evaluation_test(request, dyslexia_type):
                         response in expected_str):
                         score += 1
         
-        # Store evaluation data
+        # NEW: Calculate STT accuracy for ML features
+        stt_accuracy = (score / total_questions) * 100 if total_questions > 0 else 0
+        
+        # NEW: Create EvaluationData record for ANN training
+        evaluation_data_record = EvaluationData(
+            user=request.user,
+            dyslexia_type=dyslexia_type,
+            tts_usage_count=len(tts_usage),
+            tts_questions_used=tts_usage,
+            stt_responses=stt_responses_data,
+            stt_accuracy=stt_accuracy,
+            response_times=response_times,
+            completion_time=completion_time,
+            score=score,
+            total_questions=total_questions,
+            percentage=(score / total_questions) * 100 if total_questions > 0 else 0
+        )
+        
+        # NEW: Add child profile for child users
+        if request.user.role in ["CHILD", "INDEPENDENT"]:
+            try:
+                child_profile = ChildProfile.objects.get(child=request.user)
+                evaluation_data_record.child_profile = child_profile
+            except ChildProfile.DoesNotExist:
+                pass
+        else:
+            child_id = request.session.get('current_child_id')
+            if child_id:
+                try:
+                    child_profile = ChildProfile.objects.get(child_id=child_id)
+                    evaluation_data_record.child_profile = child_profile
+                except ChildProfile.DoesNotExist:
+                    pass
+        
+        # NEW: Save the comprehensive evaluation data
+        evaluation_data_record.save()
+        
+        # Store evaluation data in session (original functionality preserved)
         evaluation_data = {
             'dyslexia_type': dyslexia_type,
             'score': score,
             'total_questions': total_questions,
-            'percentage': (score / total_questions) * 100 if total_questions > 0 else 0,
-            'responses': responses,
-            'timestamp': time.time(),
-            'user_id': request.user.id
+            'percentage': evaluation_data_record.percentage,
+            'data_id': evaluation_data_record.id  # NEW: Store the data record ID
         }
         
         # Store in session
@@ -675,6 +732,9 @@ def evaluation_test(request, dyslexia_type):
                     child_id = child_profile.child.id
         
         return redirect("child_dashboard", child_id=child_id)
+    
+    # For GET requests, store start time for timing the evaluation
+    request.session['evaluation_start_time'] = time.time()
     
     context = {
         "dyslexia_type": dyslexia_type,
@@ -712,6 +772,61 @@ def speech_to_text_api(request):
     
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
+# NEW: Data export for ANN training
+@login_required
+def export_training_data(request):
+    """Export all evaluation data as CSV for ANN model training"""
+    if not request.user.is_staff:
+        return HttpResponseForbidden("Admin access required")
+    
+    evaluations = EvaluationData.objects.all()
+    
+    data = []
+    for eval in evaluations:
+        row = {
+            'user_id': eval.user.id,
+            'dyslexia_type': eval.dyslexia_type,
+            'age': getattr(eval.user, 'age', None),
+            
+            # TTS Features
+            'tts_usage_count': eval.tts_usage_count,
+            'tts_questions_used_count': len(eval.tts_questions_used),
+            
+            # STT Features
+            'stt_accuracy': eval.stt_accuracy,
+            'total_responses': len(eval.stt_responses),
+            'empty_responses': sum(1 for r in eval.stt_responses.values() if not r.get('response')),
+            
+            # Timing Features
+            'completion_time': eval.completion_time,
+            'avg_response_time': np.mean(list(eval.response_times.values())) if eval.response_times else 0,
+            
+            # Performance Features
+            'score': eval.score,
+            'percentage': eval.percentage,
+            
+            # Derived Features
+            'uses_tts_frequently': 1 if eval.tts_usage_count > 2 else 0,
+            'slow_responder': 1 if eval.completion_time > 300 else 0,  # >5 minutes
+        }
+        
+        # Add question-specific features
+        for q_id, response_data in eval.stt_responses.items():
+            row[f'q{q_id}_response_length'] = len(response_data.get('response', ''))
+            row[f'q{q_id}_processing_time'] = response_data.get('processing_time', 0)
+            row[f'q{q_id}_used_tts'] = 1 if response_data.get('used_tts', False) else 0
+        
+        data.append(row)
+    
+    df = pd.DataFrame(data)
+    
+    # Export to CSV
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="dyslexia_training_data.csv"'
+    df.to_csv(response, index=False)
+    
+    return response
+
 # Evaluation results page (placeholder for Gemma integration)
 @login_required
 def evaluation_results(request, child_id):
@@ -742,10 +857,3 @@ def evaluation_results(request, child_id):
     }
     
     return render(request, "evaluation/results.html", context)
-
-
-
-
-
-
-
