@@ -29,6 +29,8 @@
             width: var(--sidebar-width);
             transition: all 0.3s;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            z-index: 1000;
         }
         
         .sidebar .nav-link {
@@ -51,8 +53,9 @@
         
         .main-content {
             margin-left: var(--sidebar-width);
-            padding: 30px;
+            padding: 20px;
             transition: all 0.3s;
+            min-height: 100vh;
         }
         
         .dashboard-card {
@@ -98,7 +101,63 @@
             background-color: var(--primary-color);
         }
         
-        @media (max-width: 992px) {
+        /* Mobile Navigation */
+        .mobile-navbar {
+            display: none;
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white !important; /* Force white text */
+            padding: 15px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mobile-navbar * {
+            color: white !important; /* Force all text in navbar to be white */
+        }
+        
+        .mobile-navbar .btn-outline-light {
+            border-color: white;
+            color: white !important;
+        }
+        
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            z-index: 1060;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .mobile-sidebar.active {
+            left: 0;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1055;
+        }
+        
+        .overlay.active {
+            display: block;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1199px) {
             .sidebar {
                 width: 80px;
                 text-align: center;
@@ -117,45 +176,217 @@
             }
         }
         
-        @media (max-width: 768px) {
+        @media (max-width: 991px) {
             .sidebar {
-                width: 0;
-                overflow: hidden;
+                display: none;
+            }
+            
+            .mobile-navbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
             }
             
             .main-content {
                 margin-left: 0;
+                padding-top: 80px;
             }
+            
+            .stats-cards .col-md-3 {
+                margin-bottom: 15px;
+            }
+            
+            .child-card .row > div {
+                margin-bottom: 15px;
+            }
+            
+            .child-card .d-flex.flex-wrap {
+                justify-content: flex-start !important;
+            }
+            
+            .child-card .btn-action {
+                flex: 0 0 calc(50% - 8px);
+                margin-bottom: 8px;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .main-content {
+                padding: 15px;
+                padding-top: 80px;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 15px;
+            }
+            
+            .stats-cards .col-md-3 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+            
+            .child-card .row > div {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            
+            .child-card .btn-action {
+                flex: 0 0 100%;
+            }
+            
+            .modal-dialog {
+                margin: 20px;
+            }
+        }
+        
+        @media (max-width: 575px) {
+            .stats-cards .col-md-3 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            
+            .btn-action {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+            
+            .child-card {
+                padding: 20px !important;
+            }
+            
+            .card-body .row > div {
+                margin-bottom: 10px;
+            }
+        }
+        
+        /* Improved mobile buttons */
+        .btn-mobile-friendly {
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Better spacing for mobile */
+        .mobile-spacing {
+            margin-bottom: 15px;
+        }
+        
+        /* Ensure text visibility in main content */
+        .main-content h1,
+        .main-content h2,
+        .main-content h3,
+        .main-content h4,
+        .main-content h5,
+        .main-content h6,
+        .main-content p,
+        .main-content span {
+            color: inherit !important;
         }
     </style>
 </head>
 <body>
+    <!-- Mobile Navigation -->
+    <div class="mobile-navbar">
+        <button class="btn btn-outline-light" id="mobileMenuToggle">
+            <i class="bi bi-list"></i>
+        </button>
+        <div class="d-flex align-items-center">
+            <i class="bi bi-person-check-fill fs-4 me-2"></i>
+            <span class="fw-bold">Parent Panel</span>
+        </div>
+        <div class="text-end">
+            <small>{{ request.user.username }}</small>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="overlay" id="mobileOverlay"></div>
+
+    <!-- Mobile Sidebar -->
+    <div class="mobile-sidebar p-3 d-flex flex-column" id="mobileSidebar">
+        <div class="d-flex align-items-center justify-content-between mb-4 p-2">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-person-check-fill fs-3 text-white me-2"></i>
+                <span class="fw-bold fs-5 text-white">Parent Panel</span>
+            </div>
+            <button class="btn btn-outline-light btn-sm" id="closeMobileMenu">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <ul class="nav flex-column flex-grow-1">
+            <li class="nav-item mb-2">
+                <a href="{% url 'parent_dashboard' %}" class="nav-link active text-white">
+                    <i class="bi bi-speedometer2 me-2"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a href="{% url 'child_register' %}" class="nav-link text-white">
+                    <i class="bi bi-person-plus-fill me-2"></i> <span>Register Child</span>
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a href="#" class="nav-link text-white">
+                    <i class="bi bi-graph-up me-2"></i> <span>Progress Reports</span>
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a href="#" class="nav-link text-white">
+                    <i class="bi bi-gear me-2"></i> <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="mt-auto">
+            <div class="d-flex align-items-center p-2 mb-3 rounded" style="background-color: rgba(255,255,255,0.1);">
+                <div class="flex-shrink-0">
+                    <i class="bi bi-person-circle fs-4 text-white"></i>
+                </div>
+                <div class="flex-grow-1 ms-2">
+                    <div class="fw-semibold text-white">{{ request.user.username }}</div>
+                    <small class="opacity-75 text-white">{{ request.user.email }}</small>
+                </div>
+            </div>
+            
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-light w-100 btn-mobile-friendly text-white">
+                    <i class="bi bi-box-arrow-right me-2"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
     <div class="d-flex">
-        <!-- Sidebar -->
-        <nav class="sidebar p-3 d-flex flex-column position-fixed">
+        <!-- Desktop Sidebar -->
+        <nav class="sidebar p-3 d-flex flex-column d-none d-lg-block">
             <div class="d-flex align-items-center mb-4 p-2">
                 <i class="bi bi-person-check-fill fs-3 text-white me-2"></i>
-                <span class="fw-bold fs-5 logo-text">Parent Panel</span>
+                <span class="fw-bold fs-5 logo-text text-white">Parent Panel</span>
             </div>
             
             <ul class="nav flex-column flex-grow-1">
                 <li class="nav-item mb-2">
-                    <a href="{% url 'parent_dashboard' %}" class="nav-link active">
+                    <a href="{% url 'parent_dashboard' %}" class="nav-link active text-white">
                         <i class="bi bi-speedometer2 me-2"></i> <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a href="{% url 'child_register' %}" class="nav-link">
+                    <a href="{% url 'child_register' %}" class="nav-link text-white">
                         <i class="bi bi-person-plus-fill me-2"></i> <span>Register Child</span>
                     </a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a href="#" class="nav-link">
+                    <a href="#" class="nav-link text-white">
                         <i class="bi bi-graph-up me-2"></i> <span>Progress Reports</span>
                     </a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a href="#" class="nav-link">
+                    <a href="#" class="nav-link text-white">
                         <i class="bi bi-gear me-2"></i> <span>Settings</span>
                     </a>
                 </li>
@@ -164,17 +395,17 @@
             <div class="mt-auto">
                 <div class="d-flex align-items-center p-2 mb-3 rounded" style="background-color: rgba(255,255,255,0.1);">
                     <div class="flex-shrink-0">
-                        <i class="bi bi-person-circle fs-4"></i>
+                        <i class="bi bi-person-circle fs-4 text-white"></i>
                     </div>
                     <div class="flex-grow-1 ms-2 logo-text">
-                        <div class="fw-semibold">{{ request.user.username }}</div>
-                        <small class="opacity-75">{{ request.user.email }}</small>
+                        <div class="fw-semibold text-white">{{ request.user.username }}</div>
+                        <small class="opacity-75 text-white">{{ request.user.email }}</small>
                     </div>
                 </div>
                 
                 <form method="post" action="{% url 'logout' %}">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-light w-100">
+                    <button type="submit" class="btn btn-outline-light w-100 btn-mobile-friendly text-white">
                         <i class="bi bi-box-arrow-right me-2"></i> <span class="logo-text">Logout</span>
                     </button>
                 </form>
@@ -195,17 +426,17 @@
 
             {% if request.user.is_authenticated and request.user.role == 'PARENT' %}
             <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 dashboard-header">
                 <div>
                     <h2 class="fw-bold text-dark mb-1">Parent Dashboard</h2>
-                    <p class="text-muted">Manage your children's accounts and track their progress</p>
+                    <p class="text-muted mb-0">Manage your children's accounts and track their progress</p>
                 </div>
-                <span class="badge fs-6 px-3 py-2" style="background-color: var(--primary-color);">Parent Account</span>
+                <span class="badge fs-6 px-3 py-2 d-none d-md-inline-block" style="background-color: var(--primary-color); color: white;">Parent Account</span>
             </div>
 
             <!-- Stats Cards -->
-            <div class="row mb-4">
-                <div class="col-md-3 mb-3">
+            <div class="row stats-cards mb-4">
+                <div class="col-md-3 col-sm-6 mb-3">
                     <div class="card dashboard-card h-100">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -213,14 +444,14 @@
                                     <i class="bi bi-people-fill fs-2 text-primary"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
-                                    <h5 class="card-title mb-0">{{ children|length }}</h5>
+                                    <h5 class="card-title mb-0 text-dark">{{ children|length }}</h5>
                                     <p class="text-muted mb-0">Children</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-3 col-sm-6 mb-3">
                     <div class="card dashboard-card h-100">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -228,14 +459,14 @@
                                     <i class="bi bi-check-circle-fill fs-2 text-success"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
-                                    <h5 class="card-title mb-0">{{ completed_modules }}</h5>
+                                    <h5 class="card-title mb-0 text-dark">{{ completed_modules }}</h5>
                                     <p class="text-muted mb-0">Completed Modules</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-3 col-sm-6 mb-3">
                     <div class="card dashboard-card h-100">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -243,14 +474,14 @@
                                     <i class="bi bi-trophy-fill fs-2 text-warning"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
-                                    <h5 class="card-title mb-0">{{ average_progress }}%</h5>
+                                    <h5 class="card-title mb-0 text-dark">{{ average_progress }}%</h5>
                                     <p class="text-muted mb-0">Average Progress</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-3 col-sm-6 mb-3">
                     <div class="card dashboard-card h-100">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -258,7 +489,7 @@
                                     <i class="bi bi-clock-fill fs-2 text-info"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
-                                    <h5 class="card-title mb-0">{{ learning_time }}Wala pa</h5>
+                                    <h5 class="card-title mb-0 text-dark">{{ learning_time }}Wala pa</h5>
                                     <p class="text-muted mb-0">Learning Time</p>
                                 </div>
                             </div>
@@ -270,9 +501,9 @@
             <!-- Children List -->
             <div class="card dashboard-card">
                 <div class="card-header bg-white py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="fw-bold mb-0">Your Children</h4>
-                        <a href="{% url 'child_register' %}" class="btn btn-primary">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                        <h4 class="fw-bold mb-0 text-dark">Your Children</h4>
+                        <a href="{% url 'child_register' %}" class="btn btn-primary btn-mobile-friendly">
                             <i class="bi bi-person-plus-fill me-2"></i> Register New Child
                         </a>
                     </div>
@@ -284,7 +515,7 @@
                         <div class="list-group-item p-0">
                             <div class="child-card p-4">
                                 <div class="row align-items-center">
-                                    <div class="col-md-4 mb-3 mb-md-0">
+                                    <div class="col-lg-4 col-md-12 mb-3 mb-lg-0">
                                         <a href="{% url 'child_dashboard' profile.child.id %}" class="text-decoration-none d-flex align-items-center">
                                             <div class="flex-shrink-0">
                                                 <i class="bi bi-person-circle fs-1 text-primary me-3"></i>
@@ -295,27 +526,27 @@
                                             </div>
                                         </a>
                                     </div>
-                                    <div class="col-md-3 mb-3 mb-md-0">
+                                    <div class="col-lg-2 col-md-12 mb-3 mb-lg-0">
                                         {% if profile.dyslexia_type %}
-                                        <span class="badge badge-dyslexia p-2">{{ profile.dyslexia_type }}</span>
+                                        <span class="badge badge-dyslexia p-2 w-100">{{ profile.dyslexia_type }}</span>
                                         {% else %}
-                                        <span class="badge bg-secondary p-2">Not Set</span>
+                                        <span class="badge bg-secondary p-2 w-100 text-white">Not Set</span>
                                         {% endif %}
                                     </div>
-                                    <div class="col-md-5">
-                                        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                                            <button class="btn btn-primary btn-action" data-bs-toggle="modal" data-bs-target="#loginModal"
+                                    <div class="col-lg-6 col-md-12">
+                                        <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                                            <button class="btn btn-primary btn-action btn-mobile-friendly" data-bs-toggle="modal" data-bs-target="#loginModal"
                                                     data-child-id="{{ profile.child.id }}" data-username="{{ profile.child.username }}">
-                                                <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                                                <i class="bi bi-box-arrow-in-right me-1"></i> <span class="d-none d-sm-inline">Login</span>
                                             </button>
-                                            <button class="btn btn-success btn-action" data-bs-toggle="modal" data-bs-target="#progressModal"
+                                            <button class="btn btn-success btn-action btn-mobile-friendly" data-bs-toggle="modal" data-bs-target="#progressModal"
                                                     data-child-id="{{ profile.child.id }}" data-username="{{ profile.child.username }}"
                                                     data-email="{{ profile.child.email }}" data-dyslexia="{{ profile.dyslexia_type|default:'Not Set' }}">
-                                                <i class="bi bi-bar-chart-line me-1"></i> Progress
+                                                <i class="bi bi-bar-chart-line me-1"></i> <span class="d-none d-sm-inline">Progress</span>
                                             </button>
-                                            <button class="btn btn-danger btn-action" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                            <button class="btn btn-danger btn-action btn-mobile-friendly" data-bs-toggle="modal" data-bs-target="#deleteModal"
                                                     data-child-id="{{ profile.child.id }}" data-username="{{ profile.child.username }}">
-                                                <i class="bi bi-trash me-1"></i> Delete
+                                                <i class="bi bi-trash me-1"></i> <span class="d-none d-sm-inline">Delete</span>
                                             </button>
                                         </div>
                                     </div>
@@ -329,7 +560,7 @@
                         <i class="bi bi-people fs-1 text-muted mb-3"></i>
                         <h5 class="text-muted">No children registered yet</h5>
                         <p class="text-muted mb-4">Get started by registering your first child</p>
-                        <a href="{% url 'child_register' %}" class="btn btn-primary">
+                        <a href="{% url 'child_register' %}" class="btn btn-primary btn-mobile-friendly">
                             <i class="bi bi-person-plus-fill me-2"></i> Register Your First Child
                         </a>
                     </div>
@@ -342,16 +573,16 @@
 
     <!-- Login Modal -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <form method="post" id="switchChildForm">
                     {% csrf_token %}
                     <div class="modal-header">
-                        <h5 class="modal-title"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i>Switch Account</h5>
+                        <h5 class="modal-title text-dark"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i>Switch Account</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <p>Do you want to switch to <span class="fw-bold" id="loginChildName"></span>'s account?</p>
+                        <p class="text-dark">Do you want to switch to <span class="fw-bold text-dark" id="loginChildName"></span>'s account?</p>
                         <input type="hidden" name="child_id" id="loginChildId">
                     </div>
                     <div class="modal-footer">
@@ -365,27 +596,27 @@
 
     <!-- Progress Modal -->
     <div class="modal fade" id="progressModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-bar-chart-line me-2 text-success"></i><span id="progressChildName"></span>'s Progress</h5>
+                    <h5 class="modal-title text-dark"><i class="bi bi-bar-chart-line me-2 text-success"></i><span id="progressChildName" class="text-dark"></span>'s Progress</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-4">
-                        <div class="col-md-6">
-                            <p><strong>Email:</strong> <span id="progressChildEmail"></span></p>
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <p class="text-dark"><strong>Email:</strong> <span id="progressChildEmail" class="text-dark"></span></p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Dyslexia Type:</strong> <span id="progressChildDyslexia"></span></p>
+                            <p class="text-dark"><strong>Dyslexia Type:</strong> <span id="progressChildDyslexia" class="text-dark"></span></p>
                         </div>
                     </div>
                     
-                    <h6 class="fw-bold mb-3">Learning Progress</h6>
+                    <h6 class="fw-bold mb-3 text-dark">Learning Progress</h6>
                     <div class="mb-4">
                         <div class="d-flex justify-content-between mb-1">
-                            <span>Reading Modules</span>
-                            <span>{{ reading_progress }}%</span>
+                            <span class="text-dark">Reading Modules</span>
+                            <span class="text-dark">{{ reading_progress }}%</span>
                         </div>
                         <div class="progress" style="height: 8px;">
                             <div class="progress-bar" role="progressbar" style="width: {{ reading_progress }}%"></div>
@@ -394,8 +625,8 @@
                     
                     <div class="mb-4">
                         <div class="d-flex justify-content-between mb-1">
-                            <span>Writing Exercises</span>
-                            <span>{{ writing_progress }}%</span>
+                            <span class="text-dark">Writing Exercises</span>
+                            <span class="text-dark">{{ writing_progress }}%</span>
                         </div>
                         <div class="progress" style="height: 8px;">
                             <div class="progress-bar" role="progressbar" style="width: {{ writing_progress }}%"></div>
@@ -404,8 +635,8 @@
                     
                     <div class="mb-4">
                         <div class="d-flex justify-content-between mb-1">
-                            <span>Spelling Practice</span>
-                            <span>{{ spelling_progress }}%</span>
+                            <span class="text-dark">Spelling Practice</span>
+                            <span class="text-dark">{{ spelling_progress }}%</span>
                         </div>
                         <div class="progress" style="height: 8px;">
                             <div class="progress-bar" role="progressbar" style="width: {{ spelling_progress }}%"></div>
@@ -413,11 +644,11 @@
                     </div>
                     
                     <div class="row mt-4">
-                        <div class="col-md-6">
+                        <div class="col-md-6 mb-3 mb-md-0">
                             <div class="card bg-light">
                                 <div class="card-body text-center py-3">
                                     <h5 class="card-title text-primary">{{ completed_modules }}</h5>
-                                    <p class="card-text small">Modules Completed</p>
+                                    <p class="card-text small text-dark">Modules Completed</p>
                                 </div>
                             </div>
                         </div>
@@ -425,7 +656,7 @@
                             <div class="card bg-light">
                                 <div class="card-body text-center py-3">
                                     <h5 class="card-title text-success">{{ average_progress }}%</h5>
-                                    <p class="card-text small">Average Score</p>
+                                    <p class="card-text small text-dark">Average Score</p>
                                 </div>
                             </div>
                         </div>
@@ -441,7 +672,7 @@
 
     <!-- Delete Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <form method="post" id="deleteChildForm">
                     {% csrf_token %}
@@ -453,7 +684,7 @@
                         <div class="text-center mb-3">
                             <i class="bi bi-exclamation-triangle-fill text-danger fs-1"></i>
                         </div>
-                        <p>Are you sure you want to delete <span class="fw-bold" id="deleteChildName"></span>'s account?</p>
+                        <p class="text-dark">Are you sure you want to delete <span class="fw-bold text-dark" id="deleteChildName"></span>'s account?</p>
                         <p class="text-danger small">⚠️ This action cannot be undone. All progress and data will be permanently lost.</p>
                     </div>
                     <div class="modal-footer">
@@ -468,9 +699,38 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Script for modal data injection -->
+    <!-- Mobile Menu Script -->
     <script>
     document.addEventListener("DOMContentLoaded", () => {
+        // Mobile menu functionality
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const closeMobileMenu = document.getElementById('closeMobileMenu');
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+
+        function openMobileMenu() {
+            mobileSidebar.classList.add('active');
+            mobileOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileMenuFunc() {
+            mobileSidebar.classList.remove('active');
+            mobileOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        mobileMenuToggle.addEventListener('click', openMobileMenu);
+        closeMobileMenu.addEventListener('click', closeMobileMenuFunc);
+        mobileOverlay.addEventListener('click', closeMobileMenuFunc);
+
+        // Close mobile menu when clicking on links
+        const mobileLinks = mobileSidebar.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', closeMobileMenuFunc);
+        });
+
+        // Modal data injection
         // Login Modal
         var loginModal = document.getElementById('loginModal');
         loginModal.addEventListener('show.bs.modal', function (event) {
