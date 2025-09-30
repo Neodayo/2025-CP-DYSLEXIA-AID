@@ -64,6 +64,8 @@ class EvaluationData(models.Model):
     child_profile = models.ForeignKey('ChildProfile', on_delete=models.CASCADE, null=True, blank=True)
     dyslexia_type = models.CharField(max_length=50)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+
     
     # TTS Interaction Data
     tts_usage_count = models.IntegerField(default=0)

@@ -208,7 +208,6 @@ def delete_child(request, child_id):
             child_profile = ChildProfile.objects.get(child__id=child_id, parent=request.user)
             child_user = child_profile.child
             username = child_user.username
-            child_profile.delete()
             child_user.delete()
             messages.success(request, f"Child account {username} deleted successfully")
         except ChildProfile.DoesNotExist:
@@ -705,7 +704,7 @@ def evaluation_test(request, dyslexia_type):
                     pass
         
         # NEW: Save the comprehensive evaluation data
-        evaluation_data_record.save()
+         # evaluation_data_record.save() #temporary lng muna
         
         # Store evaluation data in session (original functionality preserved)
         evaluation_data = {
@@ -714,6 +713,7 @@ def evaluation_test(request, dyslexia_type):
             'total_questions': total_questions,
             'percentage': evaluation_data_record.percentage,
             'data_id': evaluation_data_record.id  # NEW: Store the data record ID
+            
         }
         
         # Store in session
